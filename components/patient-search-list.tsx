@@ -81,16 +81,16 @@ export const PatientSearchList: React.FC<PatientSearchListProps> = ({
   return (
     <div id="patient-search-list-wrapper" className="space-y-6">
       {/* Search Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-surface p-5 rounded-xl border border-border/80 ">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-text-muted" />
           <input
             type="text"
             id="patient-search-input"
             placeholder="Search by patient name or contact number..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-1 focus:ring-cyan-600 focus:border-cyan-600 transition-all font-medium"
+            className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-2.5 text-sm text-text-primary placeholder-slate-400 focus:bg-surface focus:ring-1 focus:ring-cyan-600 focus:border-cyan-600 transition-all font-medium"
           />
         </div>
 
@@ -99,45 +99,45 @@ export const PatientSearchList: React.FC<PatientSearchListProps> = ({
           <button
             onClick={onOpenIntake}
             id="launcher-intake-btn"
-            className="flex items-center justify-center gap-2 py-2.5 px-5 bg-cyan-700 hover:bg-cyan-800 text-white rounded-xl font-bold text-sm shadow-sm hover:shadow-sm transition-all min-h-[44px]"
+            className="flex items-center justify-center gap-2 py-2.5 px-5 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold text-sm  hover: transition-all min-h-[44px]"
           >
             <Plus className="h-4 w-4" />
             <UserPlus className="h-4 w-4" />
             New Patient Intake
           </button>
         ) : (
-          <div className="flex items-center gap-2 text-xs bg-slate-100 border border-slate-200 px-4 py-2 rounded-xl text-slate-600 font-semibold self-start">
-            <Lock className="h-3.5 w-3.5 text-slate-500" />
+          <div className="flex items-center gap-2 text-xs bg-background border border-border px-4 py-2 rounded-xl text-slate-600 font-semibold self-start">
+            <Lock className="h-3.5 w-3.5 text-text-secondary" />
             Intake restricted to Dentist
           </div>
         )}
       </div>
 
       {/* Patient Listing Stage */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-xl border border-border  overflow-hidden">
         {filteredPatients.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 space-y-2">
+          <div className="p-12 text-center text-text-secondary space-y-2">
             <Search className="h-10 w-10 text-slate-300 mx-auto" />
-            <h4 className="text-sm font-bold text-slate-700">No Patient Found</h4>
-            <p className="text-xs text-slate-400">Try checking spelling or enter a new patient profile.</p>
+            <h4 className="text-sm font-bold text-text-primary">No Patient Found</h4>
+            <p className="text-xs text-text-muted">Try checking spelling or enter a new patient profile.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/50">
-                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Patient Name</th>
-                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Number</th>
+                <tr className="border-b border-border bg-background/50">
+                  <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider">Patient Name</th>
+                  <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider">Contact Number</th>
                   {isDentist ? (
                     <>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Age / Sex</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Registered At</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Outstanding Balance</th>
+                      <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider">Age / Sex</th>
+                      <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider">Registered At</th>
+                      <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">Outstanding Balance</th>
                     </>
                   ) : (
-                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Last Visit Date</th>
+                    <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider">Last Visit Date</th>
                   )}
-                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                  <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -151,18 +151,18 @@ export const PatientSearchList: React.FC<PatientSearchListProps> = ({
                       key={patient.id}
                       id={`patient-row-${patient.id}`}
                       onClick={() => handleRowClick(patient)}
-                      className="hover:bg-slate-50/60 transition-colors cursor-pointer group"
+                      className="hover:bg-background/60 transition-colors cursor-pointer group"
                     >
                       {/* Name */}
                       <td className="px-6 py-4.5">
-                        <div className="font-bold text-slate-800 group-hover:text-cyan-700 transition-colors">
+                        <div className="font-bold text-text-primary group-hover:text-primary transition-colors">
                           {patient.name}
                         </div>
-                        <div className="text-[11px] text-slate-400 font-mono tabular-nums mt-0.5 uppercase tracking-wide">ID: {patient.id}</div>
+                        <div className="text-[11px] text-text-muted font-mono tabular-nums mt-0.5 uppercase tracking-wide">ID: {patient.id}</div>
                       </td>
 
                       {/* Contact */}
-                      <td className="px-6 py-4.5 text-sm font-semibold text-slate-700">
+                      <td className="px-6 py-4.5 text-sm font-semibold text-text-primary">
                         {patient.contact}
                       </td>
 
@@ -174,7 +174,7 @@ export const PatientSearchList: React.FC<PatientSearchListProps> = ({
                           </td>
 
                           {/* Registered At */}
-                          <td className="px-6 py-4.5 text-xs font-medium text-slate-500">
+                          <td className="px-6 py-4.5 text-xs font-medium text-text-secondary">
                             {new Date(patient.registeredAt).toLocaleDateString(undefined, {
                               year: 'numeric', month: 'short', day: 'numeric'
                             })}
@@ -197,7 +197,7 @@ export const PatientSearchList: React.FC<PatientSearchListProps> = ({
                         /* Last Visit Date for Staff only */
                         <td className="px-6 py-4.5 text-sm font-semibold text-slate-600">
                           {lastVisit === 'None recorded' ? (
-                            <span className="text-slate-400">Never visited</span>
+                            <span className="text-text-muted">Never visited</span>
                           ) : (
                             new Date(lastVisit).toLocaleDateString(undefined, {
                               year: 'numeric', month: 'short', day: 'numeric'
@@ -209,7 +209,7 @@ export const PatientSearchList: React.FC<PatientSearchListProps> = ({
                       {/* Action Cell */}
                       <td className="px-6 py-4.5 text-right">
                         <button
-                          className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-400 group-hover:text-cyan-600 transition-all self-end min-h-[44px]"
+                          className="p-1.5 hover:bg-background rounded-xl text-text-muted group-hover:text-cyan-600 transition-all self-end min-h-[44px]"
                           aria-label="View Details"
                         >
                           <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -233,22 +233,22 @@ export const PatientSearchList: React.FC<PatientSearchListProps> = ({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl border border-slate-200 max-w-md w-full p-6 shadow-sm relative"
+              className="bg-surface rounded-2xl border border-border max-w-md w-full p-6  relative"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+              <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
                 <div className="flex items-center gap-2">
-                  <span className="h-8 w-8 bg-slate-100 text-slate-600 flex items-center justify-center rounded-xl font-bold text-sm">
+                  <span className="h-11 w-11 bg-background text-slate-600 flex items-center justify-center rounded-xl font-bold text-sm">
                     St
                   </span>
                   <div>
-                    <h4 className="text-base font-bold text-slate-800">Minimal Patient Card</h4>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wide font-mono tabular-nums">Staff View Mode</span>
+                    <h4 className="text-base font-bold text-text-primary">Minimal Patient Card</h4>
+                    <span className="text-[10px] text-text-muted uppercase tracking-wide font-mono tabular-nums">Staff View Mode</span>
                   </div>
                 </div>
                 <button
                   id="close-staff-card"
                   onClick={() => setSelectedStaffPatient(null)}
-                  className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"
+                  className="p-1.5 hover:bg-background rounded-full text-text-muted transition-colors"
                 >
                   <XIcon className="h-5 w-5" />
                 </button>
@@ -256,26 +256,26 @@ export const PatientSearchList: React.FC<PatientSearchListProps> = ({
 
               {/* Patient Fields for Front Desk verification */}
               <div className="space-y-4">
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
+                <div className="bg-background p-4 rounded-xl border border-border space-y-3">
                   <div>
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Verified Patient Name</span>
-                    <span className="text-lg font-bold text-slate-800 leading-snug">{selectedStaffPatient.name}</span>
+                    <span className="block text-[10px] font-bold text-text-muted uppercase tracking-wider">Verified Patient Name</span>
+                    <span className="text-lg font-bold text-text-primary leading-snug">{selectedStaffPatient.name}</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-200/50">
+                  <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/50">
                     <div>
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      <span className="block text-[10px] font-bold text-text-muted uppercase tracking-wider flex items-center gap-1">
                         <Phone className="h-3 w-3" /> Contact
                       </span>
-                      <span className="text-sm font-semibold text-slate-700">{selectedStaffPatient.contact}</span>
+                      <span className="text-sm font-semibold text-text-primary">{selectedStaffPatient.contact}</span>
                     </div>
                     <div>
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      <span className="block text-[10px] font-bold text-text-muted uppercase tracking-wider flex items-center gap-1">
                         <Calendar className="h-3 w-3" /> Last Visit Date
                       </span>
-                      <span className="text-sm font-semibold text-slate-700">
+                      <span className="text-sm font-semibold text-text-primary">
                         {getLastVisitDate(selectedStaffPatient.id) === 'None recorded' ? (
-                          <span className="text-slate-400 font-medium">None recorded</span>
+                          <span className="text-text-muted font-medium">None recorded</span>
                         ) : (
                           new Date(getLastVisitDate(selectedStaffPatient.id)).toLocaleDateString(undefined, {
                             year: 'numeric', month: 'short', day: 'numeric'
@@ -287,15 +287,15 @@ export const PatientSearchList: React.FC<PatientSearchListProps> = ({
                 </div>
 
                 {/* Restricted State Message */}
-                <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-2 text-xs text-slate-500 leading-relaxed">
-                  <div className="flex items-center gap-1.5 font-bold text-slate-700 mb-1">
+                <div className="bg-background border border-border p-4 rounded-xl space-y-2 text-xs text-text-secondary leading-relaxed">
+                  <div className="flex items-center gap-1.5 font-bold text-text-primary mb-1">
                     <ShieldCheck className="h-4 w-4 text-cyan-600" />
                     Authorized Access Bounds:
                   </div>
                   <p>
-                    Confidential clinical charts, diagnostic records, allergies, treatment summaries, billing details, and patient outstanding balances are restricted under the <strong className="text-slate-700">Philippine Data Privacy Act (RA 10173)</strong>.
+                    Confidential clinical charts, diagnostic records, allergies, treatment summaries, billing details, and patient outstanding balances are restricted under the <strong className="text-text-primary">Philippine Data Privacy Act (RA 10173)</strong>.
                   </p>
-                  <p className="text-[11px] text-cyan-700 font-semibold flex items-center gap-1 mt-1">
+                  <p className="text-[11px] text-primary font-semibold flex items-center gap-1 mt-1">
                     <Lock className="h-3.5 w-3.5" /> Clinical records are only readable by licensed Dentists.
                   </p>
                 </div>
@@ -303,7 +303,7 @@ export const PatientSearchList: React.FC<PatientSearchListProps> = ({
                 <button
                   id="confirm-close-staff-card"
                   onClick={() => setSelectedStaffPatient(null)}
-                  className="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-1"
+                  className="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-sm  transition-all flex items-center justify-center gap-1"
                 >
                   <HeartHandshake className="h-4 w-4" />
                   Confirm and Close Card

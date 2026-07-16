@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useClinic } from '@/lib/clinic-state';
 import { ToothConditionEvent, PlannedTreatment } from '@/lib/types';
-import { Info, Save, X, Edit3, ClipboardList } from 'lucide-react';
+import { Info, Save, X, Edit3, ClipboardList, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 import { useActiveEncounter } from '@/design-system/patient-context';
@@ -27,7 +27,8 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
     plannedTreatments,
     addToothEvent,
     togglePlannedTreatment,
-    currentUser
+    currentUser,
+    allergies
   } = useClinic();
 
   const patient = patients.find(p => p.id === patientId);
@@ -62,6 +63,8 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
   const [editorNote, setEditorNote] = useState<string>('');
 
   if (!patient) return <div className="p-4 text-center text-gray-500">Patient not found</div>;
+
+  const patientAllergies = allergies.filter(a => a.patientId === patientId);
 
   // FDI Tooth Rows
   const upperPermanent = ['18', '17', '16', '15', '14', '13', '12', '11', '21', '22', '23', '24', '25', '26', '27', '28'];
@@ -122,23 +125,23 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
     setSelectedTooth(null);
   };
 
-  // Color mappings based on condition
+  // Precise Color mappings based on Echevaria Dental Clinical Spec (DESIGN.md Section 2)
   const getConditionStyles = (code: 'H' | 'D' | 'F' | 'X' | 'C' | 'I') => {
     switch (code) {
       case 'H': // Healthy
-        return 'bg-green-100 text-green-800 border-green-300';
+        return 'bg-[#DCFCE7] text-[#166534] border-[#15803D]/20';
       case 'D': // Decay
-        return 'bg-red-100 text-red-800 border-red-300';
+        return 'bg-[#FEE2E2] text-[#991B1B] border-[#B91C1C]/20';
       case 'F': // Filled
-        return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'X': // Extracted/missing
-        return 'bg-gray-100 text-gray-500 border-dashed border-2 border-gray-300';
+        return 'bg-[#DBEAFE] text-[#1E40AF] border-[#1E40AF]/20';
+      case 'X': // Extracted/missing (dashed border & light slate fill)
+        return 'bg-[#F1F5F9] text-[#475569] border-dashed border-2 border-[#94A3B8]';
       case 'C': // Crown
-        return 'bg-purple-100 text-purple-800 border-purple-300';
+        return 'bg-[#F3E8FF] text-[#6B21A8] border-[#6B21A8]/20';
       case 'I': // Implant
-        return 'bg-teal-100 text-teal-800 border-teal-300';
+        return 'bg-[#CCFBF1] text-[#115E59] border-[#115E59]/20';
       default:
-        return 'bg-gray-50 text-gray-800 border-gray-200';
+        return 'bg-[#F8F7F5] text-[#1F2933] border-border';
     }
   };
 
@@ -153,64 +156,64 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
         key={tooth}
         id={`tooth-cell-${tooth}`}
         onClick={() => handleToothClick(tooth)}
-        className={`relative flex flex-col items-center justify-center flex-1 aspect-[3/4] max-w-[3.5rem] sm:max-w-[4.5rem] lg:max-w-[5.5rem] min-w-[2rem] rounded-xl border shadow-sm transition-all select-none
+        className={`relative flex flex-col items-center justify-center w-11 h-11 sm:w-12 sm:h-12 shrink-0 rounded-lg border  transition-all select-none
           ${interactive ? 'cursor-pointer hover:scale-105 active:scale-95' : 'cursor-default'}
           ${styles}
           ${isSelected ? 'ring-4 ring-cyan-500 scale-105 border-cyan-500 z-10' : ''}
-          ${planned ? 'ring-2 ring-amber-500 ring-offset-1' : ''}
+          ${planned ? 'ring-2 ring-[#B45309] border-[#B45309]' : ''}
         `}
         title={`Tooth ${tooth}: ${code} ${planned ? '(Planned: ' + planned.description + ')' : ''} ${note ? '- ' + note : ''}`}
       >
         {/* FDI Number at Top Left */}
-        <span className="absolute top-1 left-1 lg:top-2 lg:left-2 text-[8px] sm:text-[9px] lg:text-[11px] font-mono tabular-nums font-semibold opacity-70">
+        <span className="absolute top-1 left-1 text-[8px] sm:text-[9px] font-mono tabular-nums font-semibold opacity-70 text-[#475569]">
           {tooth}
         </span>
 
         {/* Condition Letter Code in Center */}
-        <span className="text-base sm:text-lg lg:text-2xl font-bold tracking-tight">
+        <span className="text-sm sm:text-base font-bold tracking-tight">
           {code}
         </span>
 
-        {/* Planned Badge Overlay at Top Right (P) */}
+        {/* Planned Badge Overlay at Top Right (P) - Amber Token #B45309 */}
         {planned && (
-          <span className="absolute -top-1 -right-1 lg:top-1 lg:right-1 flex h-4 w-4 lg:h-5 lg:w-5 items-center justify-center rounded-full bg-amber-500 text-[9px] lg:text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
+          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#B45309] text-[9px] font-bold text-white  ring-1 ring-white">
             P
           </span>
         )}
 
         {/* Note indicator dot at the bottom if side note exists */}
         {note && (
-          <span className="absolute bottom-1 lg:bottom-2 h-1 w-1 lg:h-1.5 lg:w-1.5 rounded-full bg-slate-500"></span>
+          <span className="absolute bottom-1 h-1 w-1 rounded-full bg-[#64748B]"></span>
         )}
       </div>
     );
   };
 
   return (
-    <div id="odontogram-chart-container" className={noCard ? "flex flex-col w-full p-2" : "flex flex-col w-full bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm"}>
+    <div id="odontogram-chart-container" className={noCard ? "flex flex-col w-full p-2" : "flex flex-col w-full bg-surface rounded-2xl border border-border p-4 sm:p-6 "}>
       {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4 mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
             <ClipboardList className="h-5 w-5 text-cyan-600" />
             Official PDA Odontogram (FDI Notation)
           </h3>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-text-secondary mt-1">
             {interactive ? 'Tap any tooth cell to chart conditions, flag treatments, or add clinical notes.' : 'Visual clinical history chart. Touch is read-only.'}
           </p>
         </div>
 
-        {/* Dentition Selector Toggle */}
-        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl self-start">
+        {/* Dentition Selector Toggle - Styled as Segmented Control */}
+        <div className="flex items-center gap-1.5 bg-[#F1F5F9] p-1 rounded-xl self-start border border-border/50">
           {(['permanent', 'both', 'primary'] as const).map(option => (
             <button
               key={option}
               id={`dentition-toggle-${option}`}
               onClick={() => setDentition(option)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition-all capitalize ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition-all capitalize cursor-pointer ${
                 dentition === option
-                  ? 'bg-white text-cyan-700 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-surface text-[#0E7490]  font-bold'
+                  : 'text-[#64748B] hover:text-[#1F2933]'
               }`}
             >
               {option === 'both' ? 'Both Jaws' : option}
@@ -225,7 +228,7 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
 
           {/* UPPER JAW (Maxillary Arch) */}
           <div className="flex flex-col items-center gap-3 w-full">
-            <span className="text-xs font-bold text-slate-400 tracking-wider uppercase">Maxillary Arch (Upper Jaw)</span>
+            <span className="text-xs font-bold text-text-muted tracking-wider uppercase">Maxillary Arch (Upper Jaw)</span>
 
             {/* Upper Permanent Row (Quadrants 1 & 2) */}
             {(dentition === 'permanent' || dentition === 'both') && (
@@ -234,7 +237,7 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
                   <React.Fragment key={tooth}>
                     {renderToothCell(tooth)}
                     {/* Midline gap separator between Quadrant 1 (left) and 2 (right) */}
-                    {idx === 7 && <div className="w-2 sm:w-4 lg:w-8 border-l-2 border-dashed border-slate-300 h-16 mx-0.5 sm:mx-1"></div>}
+                    {idx === 7 && <div className="w-2 sm:w-4 lg:w-8 border-l-2 border-dashed border-border h-16 mx-0.5 sm:mx-1"></div>}
                   </React.Fragment>
                 ))}
               </div>
@@ -242,11 +245,11 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
 
             {/* Upper Primary/Deciduous Row (Quadrants 5 & 6) - nested inside */}
             {(dentition === 'primary' || dentition === 'both') && (
-              <div className="flex w-full items-center justify-center gap-0.5 sm:gap-1 lg:gap-2 bg-slate-50/50 py-1.5 rounded-xl border border-slate-100">
+              <div className="flex w-full items-center justify-center gap-0.5 sm:gap-1 lg:gap-2 bg-background/50 py-1.5 rounded-xl border border-border">
                 {upperPrimary.map((tooth, idx) => (
                   <React.Fragment key={tooth}>
                     {renderToothCell(tooth)}
-                    {idx === 4 && <div className="w-2 sm:w-4 lg:w-8 border-l-2 border-dashed border-slate-300 h-16 mx-0.5 sm:mx-1"></div>}
+                    {idx === 4 && <div className="w-2 sm:w-4 lg:w-8 border-l-2 border-dashed border-border h-16 mx-0.5 sm:mx-1"></div>}
                   </React.Fragment>
                 ))}
               </div>
@@ -254,8 +257,8 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
           </div>
 
           {/* INTERDENTAL OCCLUSAL MIDLINE */}
-          <div className="w-full flex items-center justify-between border-t-2 border-slate-300 border-double my-1 relative">
-            <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-3 py-0.5 text-[10px] font-bold text-slate-400 border border-slate-200 rounded-full uppercase tracking-widest">
+          <div className="w-full flex items-center justify-between border-t-2 border-border border-double my-1 relative">
+            <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface px-3 py-0.5 text-[10px] font-bold text-text-muted border border-border rounded-full uppercase tracking-widest">
               Occlusal line
             </span>
           </div>
@@ -264,11 +267,11 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
           <div className="flex flex-col items-center gap-3 w-full">
             {/* Lower Primary/Deciduous Row (Quadrants 8 & 7) - nested inside */}
             {(dentition === 'primary' || dentition === 'both') && (
-              <div className="flex w-full items-center justify-center gap-0.5 sm:gap-1 lg:gap-2 bg-slate-50/50 py-1.5 rounded-xl border border-slate-100">
+              <div className="flex w-full items-center justify-center gap-0.5 sm:gap-1 lg:gap-2 bg-background/50 py-1.5 rounded-xl border border-border">
                 {lowerPrimary.map((tooth, idx) => (
                   <React.Fragment key={tooth}>
                     {renderToothCell(tooth)}
-                    {idx === 4 && <div className="w-2 sm:w-4 lg:w-8 border-l-2 border-dashed border-slate-300 h-16 mx-0.5 sm:mx-1"></div>}
+                    {idx === 4 && <div className="w-2 sm:w-4 lg:w-8 border-l-2 border-dashed border-border h-16 mx-0.5 sm:mx-1"></div>}
                   </React.Fragment>
                 ))}
               </div>
@@ -280,40 +283,40 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
                 {lowerPermanent.map((tooth, idx) => (
                   <React.Fragment key={tooth}>
                     {renderToothCell(tooth)}
-                    {idx === 7 && <div className="w-2 sm:w-4 lg:w-8 border-l-2 border-dashed border-slate-300 h-16 mx-0.5 sm:mx-1"></div>}
+                    {idx === 7 && <div className="w-2 sm:w-4 lg:w-8 border-l-2 border-dashed border-border h-16 mx-0.5 sm:mx-1"></div>}
                   </React.Fragment>
                 ))}
               </div>
             )}
 
-            <span className="text-xs font-bold text-slate-400 tracking-wider uppercase mt-1">Mandibular Arch (Lower Jaw)</span>
+            <span className="text-xs font-bold text-text-muted tracking-wider uppercase mt-1">Mandibular Arch (Lower Jaw)</span>
           </div>
 
         </div>
       </div>
 
       {/* CHART LEGEND */}
-      <div className="mt-6 border-t border-slate-100 pt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
-        <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Grayscale-Safe Legend:</span>
-        <div className="flex items-center gap-1.5 text-xs text-slate-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
+      <div className="mt-6 border-t border-border pt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+        <span className="text-xs font-bold text-text-muted uppercase tracking-wide">Grayscale-Safe Legend:</span>
+        <div className="flex items-center gap-1.5 text-xs text-text-primary bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
           <span className="font-bold bg-green-200 text-green-800 rounded-xl px-1.5 py-0.5">H</span> Healthy
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-slate-700 bg-red-50 px-2.5 py-1 rounded-full border border-red-200">
+        <div className="flex items-center gap-1.5 text-xs text-text-primary bg-red-50 px-2.5 py-1 rounded-full border border-red-200">
           <span className="font-bold bg-red-200 text-red-800 rounded-xl px-1.5 py-0.5">D</span> Decay (Cavity)
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-slate-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
+        <div className="flex items-center gap-1.5 text-xs text-text-primary bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
           <span className="font-bold bg-blue-200 text-blue-800 rounded-xl px-1.5 py-0.5">F</span> Filled
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-slate-700 bg-gray-50 px-2.5 py-1 rounded-full border border-dashed border-gray-300">
+        <div className="flex items-center gap-1.5 text-xs text-text-primary bg-gray-50 px-2.5 py-1 rounded-full border border-dashed border-gray-300">
           <span className="font-bold bg-gray-200 text-gray-500 rounded-xl px-1.5 py-0.5">X</span> Extracted
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-slate-700 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200">
+        <div className="flex items-center gap-1.5 text-xs text-text-primary bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200">
           <span className="font-bold bg-purple-200 text-purple-800 rounded-xl px-1.5 py-0.5">C</span> Crown
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-slate-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200">
+        <div className="flex items-center gap-1.5 text-xs text-text-primary bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200">
           <span className="font-bold bg-teal-200 text-teal-800 rounded-xl px-1.5 py-0.5">I</span> Implant
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-slate-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-300 ring-2 ring-amber-500">
+        <div className="flex items-center gap-1.5 text-xs text-text-primary bg-amber-50 px-2.5 py-1 rounded-full border border-amber-300 ring-2 ring-amber-500">
           <span className="font-bold bg-amber-500 text-white rounded-full h-4 w-4 inline-flex items-center justify-center text-[9px]">P</span> Planned Work Overlay
         </div>
       </div>
@@ -328,19 +331,19 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl border border-slate-200 max-w-lg w-full p-6 shadow-sm relative"
+              className="bg-surface rounded-2xl border border-border max-w-lg w-full p-6  relative"
             >
               {/* Grab handle indicator for mobile bottom-sheet feel */}
               <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4"></div>
 
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+              <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
                 <div className="flex items-center gap-2">
-                  <span className="h-8 w-8 bg-cyan-100 text-cyan-800 flex items-center justify-center rounded-xl font-mono tabular-nums font-bold text-lg">
+                  <span className="h-11 w-11 bg-cyan-100 text-primary flex items-center justify-center rounded-xl font-mono tabular-nums font-bold text-lg">
                     {selectedTooth}
                   </span>
                   <div>
-                    <h4 className="text-base font-bold text-slate-800">Tooth Editor</h4>
-                    <p className="text-xs text-slate-500">
+                    <h4 className="text-base font-bold text-text-primary">Tooth Editor</h4>
+                    <p className="text-xs text-text-secondary">
                       FDI Location: {Number(selectedTooth) >= 50 ? 'Primary / Deciduous' : 'Permanent'} Tooth
                     </p>
                   </div>
@@ -348,27 +351,41 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
                 <button
                   id="close-tooth-editor"
                   onClick={() => setSelectedTooth(null)}
-                  className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"
+                  className="p-1.5 hover:bg-background rounded-full text-text-muted transition-colors cursor-pointer"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
+              {/* Patient Allergy Clinical Safety Warning Banner inside editor */}
+              {patientAllergies.length > 0 && (
+                <div className="mb-4 p-2.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-800 font-semibold flex items-center gap-2 animate-pulse">
+                  <ShieldAlert className="h-4 w-4 text-red-600 shrink-0" />
+                  <span>
+                    ⚠ ALLERGY WARNING: This patient is allergic to{' '}
+                    <strong className="font-bold underline">
+                      {patientAllergies.map(a => a.substance).join(', ')}
+                    </strong>
+                    . Take active precautions before chairside procedures.
+                  </span>
+                </div>
+              )}
+
               {/* Form Content */}
               <div className="space-y-5">
                 {/* Condition Codes Choice */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">
                     Current Condition (Single-Select)
                   </label>
                   <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                     {([
-                      { code: 'H', label: 'Healthy', styles: 'hover:bg-green-50 active:bg-green-100 border-green-200 text-green-700 bg-green-50/30' },
-                      { code: 'D', label: 'Decay', styles: 'hover:bg-red-50 active:bg-red-100 border-red-200 text-red-700 bg-red-50/30' },
-                      { code: 'F', label: 'Filled', styles: 'hover:bg-blue-50 active:bg-blue-100 border-blue-200 text-blue-700 bg-blue-50/30' },
-                      { code: 'X', label: 'Missing', styles: 'hover:bg-slate-50 active:bg-slate-100 border-slate-200 text-slate-700 bg-slate-50/30' },
-                      { code: 'C', label: 'Crown', styles: 'hover:bg-purple-50 active:bg-purple-100 border-purple-200 text-purple-700 bg-purple-50/30' },
-                      { code: 'I', label: 'Implant', styles: 'hover:bg-teal-50 active:bg-teal-100 border-teal-200 text-teal-700 bg-teal-50/30' }
+                      { code: 'H', label: 'Healthy', styles: 'hover:bg-green-50 border-[#DCFCE7] text-[#166534] bg-[#DCFCE7]/30', chosenStyles: 'bg-[#DCFCE7] border-[#166534] text-[#166534]' },
+                      { code: 'D', label: 'Decay', styles: 'hover:bg-red-50 border-[#FEE2E2] text-[#991B1B] bg-[#FEE2E2]/30', chosenStyles: 'bg-[#FEE2E2] border-[#991B1B] text-[#991B1B]' },
+                      { code: 'F', label: 'Filled', styles: 'hover:bg-blue-50 border-[#DBEAFE] text-[#1E40AF] bg-[#DBEAFE]/30', chosenStyles: 'bg-[#DBEAFE] border-[#1E40AF] text-[#1E40AF]' },
+                      { code: 'X', label: 'Missing', styles: 'hover:bg-[#F1F5F9] border-dashed border-[#94A3B8] text-[#475569] bg-[#F1F5F9]/30', chosenStyles: 'bg-[#F1F5F9] border-dashed border-[#94A3B8] text-[#475569]' },
+                      { code: 'C', label: 'Crown', styles: 'hover:bg-purple-50 border-[#F3E8FF] text-[#6B21A8] bg-[#F3E8FF]/30', chosenStyles: 'bg-[#F3E8FF] border-[#6B21A8] text-[#6B21A8]' },
+                      { code: 'I', label: 'Implant', styles: 'hover:bg-teal-50 border-[#CCFBF1] text-[#115E59] bg-[#CCFBF1]/30', chosenStyles: 'bg-[#CCFBF1] border-[#115E59] text-[#115E59]' }
                     ] as const).map(item => {
                       const isChosen = editorCondition === item.code;
                       return (
@@ -376,8 +393,8 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
                           key={item.code}
                           id={`editor-condition-${item.code}`}
                           onClick={() => setEditorCondition(item.code)}
-                          className={`flex flex-col items-center justify-center py-2 border rounded-xl font-semibold transition-all cursor-pointer h-14 ${item.styles}
-                            ${isChosen ? 'ring-2 ring-cyan-500 ring-offset-1 border-cyan-500 font-bold bg-cyan-50 text-cyan-900 shadow-sm scale-105' : 'opacity-80'}
+                          className={`flex flex-col items-center justify-center py-2 border rounded-xl font-semibold transition-all cursor-pointer h-14
+                            ${isChosen ? `${item.chosenStyles} ring-2 ring-[#0E7490] ring-offset-1 font-bold  scale-105` : `${item.styles} opacity-80`}
                           `}
                         >
                           <span className="text-base">{item.code}</span>
@@ -389,7 +406,7 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
                 </div>
 
                 {/* Planned Treatment (P Overlay) */}
-                <div className="border-t border-slate-100 pt-4">
+                <div className="border-t border-border pt-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2.5">
                       <input
@@ -397,13 +414,13 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
                         id="editor-planned-checkbox"
                         checked={editorPlanned}
                         onChange={(e) => setEditorPlanned(e.target.checked)}
-                        className="h-5 w-5 rounded-xl border-slate-300 text-amber-600 focus:ring-amber-500"
+                        className="h-5 w-5 rounded-xl border-border text-amber-600 focus:ring-amber-500"
                       />
                       <div>
-                        <label htmlFor="editor-planned-checkbox" className="text-sm font-bold text-slate-700 cursor-pointer">
+                        <label htmlFor="editor-planned-checkbox" className="text-sm font-bold text-text-primary cursor-pointer">
                           Flag Planned Treatment (P Overlay)
                         </label>
-                        <p className="text-xs text-slate-500">Planned work acts as an overlay and does not replace current condition.</p>
+                        <p className="text-xs text-text-secondary">Planned work acts as an overlay and does not replace current condition.</p>
                       </div>
                     </div>
                     <span className="text-[10.5px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full uppercase">P-State</span>
@@ -422,7 +439,7 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
                         id="editor-planned-desc"
                         value={editorPlannedDesc}
                         onChange={(e) => setEditorPlannedDesc(e.target.value)}
-                        className="w-full bg-white border border-slate-300 rounded-2xl py-1.5 px-3 text-xs focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-slate-800 font-medium"
+                        className="w-full bg-surface border border-border rounded-2xl py-1.5 px-3 text-xs focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-text-primary font-medium"
                       >
                         <option value="Surgical tooth extraction">Surgical tooth extraction</option>
                         <option value="Root canal treatment (RCT)">Root canal treatment (RCT)</option>
@@ -436,8 +453,8 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
                 </div>
 
                 {/* Side Note */}
-                <div className="border-t border-slate-100 pt-4">
-                  <label htmlFor="editor-note" className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                <div className="border-t border-border pt-4">
+                  <label htmlFor="editor-note" className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">
                     Tooth Note / Diagnoses Side Note
                   </label>
                   <textarea
@@ -445,7 +462,7 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
                     value={editorNote}
                     onChange={(e) => setEditorNote(e.target.value)}
                     placeholder="Enter clinical observations, sensitivity notes, or reference details..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 h-20 text-slate-800 font-medium"
+                    className="w-full bg-background border border-border rounded-xl p-3 text-sm focus:bg-surface focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 h-20 text-text-primary font-medium"
                   />
                 </div>
 
@@ -454,14 +471,14 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
                   <button
                     id="cancel-save-tooth"
                     onClick={() => setSelectedTooth(null)}
-                    className="flex-1 py-3 border border-slate-300 hover:bg-slate-50 rounded-xl font-bold text-sm text-slate-700 transition-colors"
+                    className="flex-1 py-3 border border-border hover:bg-background rounded-xl font-bold text-sm text-text-primary transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     id="save-tooth-changes"
                     onClick={handleSaveTooth}
-                    className="flex-1 py-3 bg-cyan-700 hover:bg-cyan-800 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-sm hover:shadow-sm transition-all min-h-[44px]"
+                    className="flex-1 py-3 bg-[#0E7490] hover:bg-[#0E7490]/90 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2  hover: transition-all min-h-[44px] cursor-pointer"
                   >
                     <Save className="h-4 w-4" />
                     Save Tooth State

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useDesignSystem } from './context';
-import { ChevronLeft, Shield, Sparkles, Sliders } from 'lucide-react';
+import { ChevronLeft, Shield, Sparkles, Sliders, AlertOctagon, AlertTriangle } from 'lucide-react';
 import { useActivePatient, useActiveEncounter } from './patient-context';
 
 export type WorkspaceMode = 'INTAKE' | 'CHARTING' | 'BILLING' | 'LEDGER' | 'HISTORY';
@@ -22,17 +22,14 @@ export interface LayoutConfig {
 // Global layout configuration registry by Mode
 export const DEFAULT_LAYOUTS: Record<WorkspaceMode, LayoutConfig> = {
   INTAKE: {
-    template: 'three-pane',
-    left: 'patient-demographics',
-    center: 'medical-history',
-    right: 'legal-consent',
-    widths: { left: 'lg:w-[30%] w-full', center: 'lg:w-[40%] w-full', right: 'lg:w-[30%] w-full' }
+    template: 'single',
+    center: 'patient-overview',
+    widths: { center: 'w-full' }
   },
   CHARTING: {
-    template: 'split-two',
+    template: 'single',
     center: 'odontogram-chart',
-    right: 'tooth-inspector',
-    widths: { center: 'lg:w-[75%] w-full', right: 'lg:w-[25%] w-full' }
+    widths: { center: 'w-full' }
   },
   BILLING: {
     template: 'three-pane',
@@ -49,11 +46,9 @@ export const DEFAULT_LAYOUTS: Record<WorkspaceMode, LayoutConfig> = {
     widths: { left: 'lg:w-[35%] w-full', center: 'lg:w-[40%] w-full', right: 'lg:w-[25%] w-full' }
   },
   HISTORY: {
-    template: 'three-pane',
-    left: 'patient-details-card',
-    center: 'encounter-timeline',
-    right: 'audit-logs',
-    widths: { left: 'lg:w-[30%] w-full', center: 'lg:w-[45%] w-full', right: 'lg:w-[25%] w-full' }
+    template: 'single',
+    center: 'encounter-history',
+    widths: { center: 'w-full' }
   }
 };
 
@@ -248,76 +243,77 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({
   const hasInfo = outstandingBalance > 0;
 
   const modeButtons: { key: WorkspaceMode; label: string }[] = [
-    { key: 'INTAKE', label: '1. Demographics & Intake' },
+    { key: 'INTAKE', label: '1. Overview' },
     { key: 'CHARTING', label: '2. Clinical Charting' },
     { key: 'BILLING', label: '3. Invoicing & Billing' },
     { key: 'LEDGER', label: '4. Financial Ledger' },
-    { key: 'HISTORY', label: '5. Audit & History' },
+    { key: 'HISTORY', label: '5. Visits' },
   ];
 
   return (
     <div className={`space-y-4 text-left border-b ${c.border} pb-4 shrink-0`}>
       {/* Demographics Summary Strip */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="p-1.5 hover:bg-slate-100 rounded-none text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
-              title="Return to Patient Search"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-          )}
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className={t.display}>{patientDetails.name}</h2>
-              {patientDetails.isSenior && <span className="bg-cyan-50 border border-cyan-200 text-cyan-800 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">Senior</span>}
-              {patientDetails.isMinor && <span className="bg-blue-50 border border-blue-200 text-blue-800 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">Minor</span>}
-              {patientDetails.isPwd && <span className="bg-purple-50 border border-purple-200 text-purple-800 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">PWD</span>}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-4 flex-1">
+          {/* Patient Identity Badge */}
+          <div className="flex items-center gap-3 shrink-0">
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="p-1.5 hover:bg-slate-100 rounded-none text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+                title="Return to Patient Search"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+            )}
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className={t.display}>{patientDetails.name}</h2>
+                {patientDetails.isSenior && <span className="bg-cyan-50 border border-cyan-200 text-cyan-800 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">Senior</span>}
+                {patientDetails.isMinor && <span className="bg-blue-50 border border-blue-200 text-blue-800 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">Minor</span>}
+                {patientDetails.isPwd && <span className="bg-purple-50 border border-purple-200 text-purple-800 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">PWD</span>}
+              </div>
+              <p className="text-[11px] text-slate-500 font-semibold mt-0.5">
+                DOB: <span className={t.monoData}>{patientDetails.dob}</span> • Gender: {patientDetails.gender} • Phone: <span className={t.monoData}>{patientDetails.phone}</span>
+              </p>
             </div>
-            <p className="text-[11px] text-slate-500 font-semibold mt-0.5">
-              DOB: <span className={t.monoData}>{patientDetails.dob}</span> • Gender: {patientDetails.gender} • Phone: <span className={t.monoData}>{patientDetails.phone}</span>
-            </p>
           </div>
+
+          {/* CLINICAL SAFETY SEVERITY MATRIX (Horizontal Row) */}
+          {(hasCritical || hasWarning) && (
+            <div className="flex flex-wrap items-center gap-2 flex-1">
+              {hasCritical && (
+                <div className={`py-1.5 px-3 ${c.criticalBg} border ${c.criticalBorder} border-l-4 border-l-rose-600 text-rose-900 rounded-none flex items-center gap-2.5 shadow-none shrink-0`}>
+                  <AlertOctagon className="h-4 w-4 text-rose-600 shrink-0" />
+                  <span className="text-[10px] font-bold tracking-wider uppercase text-rose-700 shrink-0">CRITICAL ALERT</span>
+                  <div className="text-[10px] font-bold text-rose-900">
+                    {criticalAllergies.length > 0 ? `Allergy: ${criticalAllergies.join(', ').toUpperCase()}. ` : ''}
+                    {bleedingDisorders.length > 0 ? `Bleeding Risk: ${bleedingDisorders.join(', ').toUpperCase()}.` : ''}
+                  </div>
+                </div>
+              )}
+              {hasWarning && (
+                <div className={`py-1.5 px-3 ${c.warningBg} border ${c.warningBorder} border-l-4 border-l-amber-500 text-amber-900 rounded-none flex items-center gap-2.5 shadow-none shrink-0`}>
+                  <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+                  <span className="text-[10px] font-bold tracking-wider uppercase text-amber-700 shrink-0">WARNING</span>
+                  <div className="text-[10px] font-semibold text-amber-900">
+                    {warnings.length > 0 ? `Conditions: ${warnings.join(', ')}. ` : ''}
+                    {patientDetails.medications && patientDetails.medications.length > 0 ? `Meds: ${patientDetails.medications.join(', ')}.` : ''}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Outstanding Balance Info Badge */}
         {outstandingBalance > 0 && (
-          <div className="bg-rose-50 border border-rose-100 py-1.5 px-3.5 rounded-none self-start md:self-center">
+          <div className="bg-rose-50 border border-rose-100 py-1.5 px-3.5 rounded-none shrink-0 self-start lg:self-center">
             <span className="block text-[9px] text-rose-500 font-bold uppercase tracking-wider">Outstanding Balance</span>
             <span className="font-mono text-xs font-bold text-rose-700">₱{outstandingBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
           </div>
         )}
       </div>
-
-      {/* CLINICAL SAFETY SEVERITY MATRIX */}
-      {(hasCritical || hasWarning || hasInfo) && (
-        <div className="space-y-2">
-          {/* TIER 1: CRITICAL MEDICAL ALERT (Crimson Border, bold alerts) */}
-          {hasCritical && (
-            <div className={`p-3 bg-rose-50 border-2 border-rose-500 text-rose-800 ${r.xl} animate-pulse-subtle flex items-start gap-2.5 shadow-none`}>
-              <span className="bg-rose-600 text-white font-bold text-[9px] py-0.5 px-2 rounded-full uppercase shrink-0 mt-0.5">CRITICAL ALERT</span>
-              <div className="text-[11px] font-bold leading-normal">
-                SYSTEMIC MEDICAL HAZARDS DETECTED: {criticalAllergies.length > 0 ? `Severe Drug Allergies: [${criticalAllergies.join(', ').toUpperCase()}]. ` : ''}
-                {bleedingDisorders.length > 0 ? `Bleeding tendencies / coagulation risks noted: [${bleedingDisorders.join(', ').toUpperCase()}].` : ''}
-                <span className="underline ml-1 block sm:inline">Confirm alternative anesthetic or clinical path before operation.</span>
-              </div>
-            </div>
-          )}
-
-          {/* TIER 2: WARNING ALERT (Amber warning) */}
-          {hasWarning && (
-            <div className={`p-2.5 bg-amber-50/90 border border-amber-300 text-amber-800 ${r.xl} flex items-start gap-2.5`}>
-              <span className="bg-amber-500 text-white font-bold text-[9px] py-0.5 px-2 rounded-full uppercase shrink-0 mt-0.5">WARNING</span>
-              <div className="text-[11px] font-semibold leading-normal">
-                Active medical conditions or ongoing therapies: {warnings.join(', ')}. 
-                {patientDetails.medications && patientDetails.medications.length > 0 ? ` Active medications: [${patientDetails.medications.join(', ')}].` : ''}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Unified Mode Selector Row */}
       <div className="flex items-center gap-1 bg-slate-100/90 border border-slate-200/50 p-1 rounded-none overflow-x-auto whitespace-nowrap scrollbar-none">

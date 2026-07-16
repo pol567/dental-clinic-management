@@ -479,21 +479,24 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const pct = discountType === 'senior' || discountType === 'pwd' ? 20 : customDiscountPct;
       const computed = calculateBillTotals(bill.subtotal, discountType, pct);
 
+      const visitObj = visits.find(v => v.id === bill.visitId);
+      const patientId = visitObj ? visitObj.patientId : '';
+      const patientObj = patients.find(p => p.id === patientId);
+
       const finalizedBill: Bill = {
         ...bill,
         status: 'finalized',
         discountType,
         discountPct: pct,
         vatExempt: discountType === 'senior' || discountType === 'pwd',
+        scPwdIdSnapshot: patientObj?.scPwdIdNumber || bill.scPwdIdSnapshot,
+        tinSnapshot: patientObj?.tin || bill.tinSnapshot,
         discountAmount: computed.discountAmount,
         vatAmount: computed.vatAmount,
         grandTotal: computed.grandTotal
       };
 
       // Create ledger entry for the charge
-      const visitObj = visits.find(v => v.id === bill.visitId);
-      const patientId = visitObj ? visitObj.patientId : '';
-
       const newLedgerEntry: LedgerEntry = {
         id: 'le-' + Math.random().toString(36).substr(2, 9),
         patientId,

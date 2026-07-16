@@ -1,6 +1,6 @@
 export { colors } from './colors';
 export { spacing, densitySpacing } from './spacing';
-export type { DensityMode, SpacingTokens } from './spacing';
+export type { SpacingTokens } from './spacing';
 export { radius } from './radius';
 export { typography } from './typography';
 export { shadows } from './shadows';

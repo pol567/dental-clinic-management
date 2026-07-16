@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useClinic } from '@/lib/clinic-state';
 import { DEFAULT_MEDICAL_QUESTIONS } from '@/lib/types';
-import { ChevronLeft, ChevronRight, UserPlus, FileText, AlertTriangle, ShieldCheck, UserCheck, Check } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { ChevronLeft, ChevronRight, UserPlus, Shield, AlertTriangle, Check } from 'lucide-react';
 
 interface NewPatientIntakeProps {
   onCancel: () => void;
@@ -79,6 +78,7 @@ export const NewPatientIntake: React.FC<NewPatientIntakeProps> = ({
     const minor = age < 18;
     const senior = age >= 60;
 
+    // ponytail: age limits are evaluated in-memory. An upgrade path should log an audit trace in the patient registration ledger.
     setTimeout(() => {
       setIsMinor(minor);
       setIsSenior(senior);
@@ -111,10 +111,14 @@ export const NewPatientIntake: React.FC<NewPatientIntakeProps> = ({
       if (!address.trim()) newErrors.address = 'Primary residential address is required.';
 
       if (isMinor) {
+        if (!name.trim()) {
+          // Skip if parent name itself is empty
+        }
         if (!guardianName.trim()) newErrors.guardianName = 'Guardian name is required for minors.';
         if (!guardianContact.trim()) newErrors.guardianContact = 'Guardian contact number is required.';
       }
 
+      // ponytail: statutory tax exemptions are verified using text ID input fields. An upgrade path should call a government integration API (OSCA/NCDA database) for automated credential validation.
       if ((isSenior || isPwd) && !scPwdIdNumber.trim()) {
         newErrors.scPwdIdNumber = 'OSCA or PWD ID Number is required for tax deduction.';
       }
@@ -143,7 +147,6 @@ export const NewPatientIntake: React.FC<NewPatientIntakeProps> = ({
   const handleSubmit = () => {
     if (!validateStep()) return;
 
-    // Build the package
     const patientData = {
       name,
       dateOfBirth,
@@ -174,101 +177,103 @@ export const NewPatientIntake: React.FC<NewPatientIntakeProps> = ({
   };
 
   return (
-    <div id="new-patient-intake-wrapper" className="max-w-2xl mx-auto bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden">
-      {/* Progress Wizard Header */}
-      <div className="bg-gradient-to-br from-cyan-700 to-cyan-900 p-6 text-white flex items-center justify-between">
+    <div id="new-patient-intake-wrapper" className="max-w-4xl mx-auto bg-white border border-border rounded flex flex-col">
+      {/* Header (No gradients, flat clinical surface) */}
+      <div className="border-b border-border p-6 flex items-center justify-between">
         <div className="space-y-1">
-          <h3 className="text-xl font-bold flex items-center gap-2">
-            <UserPlus className="h-5 w-5" />
+          <h3 className="text-base font-bold text-text-primary flex items-center gap-2">
+            <UserPlus className="h-4 w-4 text-primary" />
             Patient Intake & Consent Form
           </h3>
-          <p className="text-xs text-cyan-100">Establish a legal and clinical digital patient chart</p>
+          <p className="text-xs text-text-muted">Register a clinical patient file folder.</p>
         </div>
-        <span className="text-xs font-mono tabular-nums font-bold bg-cyan-600/40 border border-white/10 px-3 py-1 rounded-full">
+        <span className="text-xs font-mono font-bold bg-primary-tint text-primary px-2.5 py-1 rounded">
           Step {step + 1} of 3
         </span>
       </div>
 
-      {/* Steps Visual Tracker */}
-      <div className="flex border-b border-slate-100 bg-slate-50/50 p-4">
+      {/* Progress Tracker (Text-based horizontal list, no visual bubble indicator) */}
+      <div className="flex border-b border-border bg-[#F8F7F5] px-6 py-3 text-xs overflow-x-auto divide-x divide-border">
         {[
           { label: 'Demographics & ID' },
           { label: 'Medical & Allergies' },
-          { label: 'PH Privacy & Consents' }
-        ].map((item, idx) => (
-          <div key={idx} className="flex-1 flex items-center gap-2 px-2">
-            <span className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold transition-all
-              ${idx === step
-                ? 'bg-cyan-700 text-white font-bold ring-2 ring-cyan-600 ring-offset-2'
-                : idx < step
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-200 text-slate-500'
-              }
-            `}>
-              {idx < step ? <Check className="h-3.5 w-3.5" /> : idx + 1}
-            </span>
-            <span className={`text-xs font-semibold ${idx === step ? 'text-slate-800 font-bold' : 'text-slate-400'}`}>
-              {item.label}
-            </span>
-            {idx < 2 && <div className="flex-1 h-0.5 bg-slate-200 ml-2 hidden sm:block"></div>}
-          </div>
-        ))}
+          { label: 'Privacy & Consents' }
+        ].map((item, idx) => {
+          const isActive = idx === step;
+          const isDone = idx < step;
+          return (
+            <div key={idx} className={`flex items-center gap-2 px-4 first:pl-0 ${isActive ? 'font-bold' : ''}`}>
+              {isDone ? (
+                <span className="text-success flex items-center justify-center shrink-0">
+                  <Check className="h-3.5 w-3.5" />
+                </span>
+              ) : (
+                <span className={`text-[10px] font-mono font-bold ${isActive ? 'text-primary' : 'text-text-muted'}`}>
+                  0{idx + 1}.
+                </span>
+              )}
+              <span className={`transition-all leading-none ${isActive ? 'text-text-primary border-b border-text-primary pb-0.5' : 'text-text-muted'}`}>
+                {item.label}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Intake Wizard Body */}
+      {/* Form Content */}
       <div className="p-6 sm:p-8 space-y-6">
 
         {/* STEP 1: DEMOGRAPHICS */}
         {step === 0 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
-            <div className="border-b border-slate-100 pb-3">
-              <h4 className="text-base font-bold text-slate-800">1. Demographic Records</h4>
-              <p className="text-xs text-slate-500">Inputs must match official government ID records for safety and tax audits.</p>
+          <div className="space-y-5">
+            <div className="border-b border-border pb-2.5">
+              <h4 className="text-sm font-bold text-text-primary">1. Patient Information Details</h4>
+              <p className="text-xs text-text-muted">Personal records must match government-issued identification cards.</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Name */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              {/* Full Name */}
               <div className="space-y-1.5 sm:col-span-2">
-                <label htmlFor="intake-name" className="block text-xs font-bold text-slate-600 uppercase">Patient Full Name</label>
+                <label htmlFor="intake-name" className="block text-xs font-bold text-text-secondary uppercase tracking-wider">Patient Full Name*</label>
                 <input
                   type="text"
                   id="intake-name"
                   placeholder="e.g. Maria Clara Santos"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className={`w-full bg-white border rounded-2xl px-4 py-2.5 text-sm font-medium focus:ring-1 focus:ring-cyan-600
-                    ${errors.name ? 'border-red-400 focus:border-red-400' : 'border-slate-300 focus:border-cyan-600'}
+                  className={`w-full bg-white border rounded px-3 py-2 text-sm font-medium focus:ring-1 focus:ring-primary focus:border-primary outline-none h-11
+                    ${errors.name ? 'border-danger' : 'border-border'}
                   `}
                 />
-                {errors.name && <p className="text-[11px] text-red-500 font-semibold">{errors.name}</p>}
+                {errors.name && <p className="text-[11px] text-danger font-semibold">{errors.name}</p>}
               </div>
 
-              {/* DOB */}
-              <div className="space-y-1.5">
-                <label htmlFor="intake-dob" className="block text-xs font-bold text-slate-600 uppercase">Date of Birth</label>
+              {/* Date of Birth */}
+              <div className="space-y-1.5 sm:col-span-1">
+                <label htmlFor="intake-dob" className="block text-xs font-bold text-text-secondary uppercase tracking-wider">Date of Birth*</label>
                 <input
                   type="date"
                   id="intake-dob"
                   value={dateOfBirth}
                   onChange={(e) => setDateOfBirth(e.target.value)}
-                  className={`w-full bg-white border rounded-2xl px-4 py-2.5 text-sm font-medium focus:ring-1 focus:ring-cyan-600
-                    ${errors.dateOfBirth ? 'border-red-400 focus:border-red-400' : 'border-slate-300 focus:border-cyan-600'}
+                  className={`w-full bg-white border rounded px-3 py-2 text-sm font-medium focus:ring-1 focus:ring-primary focus:border-primary outline-none h-11
+                    ${errors.dateOfBirth ? 'border-danger' : 'border-border'}
                   `}
                 />
-                {errors.dateOfBirth && <p className="text-[11px] text-red-500 font-semibold">{errors.dateOfBirth}</p>}
+                {errors.dateOfBirth && <p className="text-[11px] text-danger font-semibold">{errors.dateOfBirth}</p>}
               </div>
 
-              {/* Sex */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-600 uppercase">Biological Sex</label>
-                <div className="flex gap-2 bg-slate-100 p-1 rounded-xl h-[45px]">
+              {/* Biological Sex */}
+              <div className="space-y-1.5 sm:col-span-1">
+                <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider">Biological Sex*</label>
+                <div className="flex bg-[#F1F5F9] p-0.5 rounded text-xs border border-border h-11 items-center">
                   {(['Male', 'Female'] as const).map(option => (
                     <button
                       key={option}
                       type="button"
                       onClick={() => setSex(option)}
-                      className={`flex-1 text-xs font-bold rounded-xl transition-all capitalize ${
-                        sex === option ? 'bg-white text-cyan-800 shadow-sm' : 'text-slate-500'
+                      className={`flex-1 py-2 rounded text-xs font-bold transition-all capitalize cursor-pointer h-9 ${
+                        sex === option ? 'bg-white text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'
                       }`}
                     >
                       {option}
@@ -277,177 +282,163 @@ export const NewPatientIntake: React.FC<NewPatientIntakeProps> = ({
                 </div>
               </div>
 
-              {/* Contact */}
+              {/* Contact Number */}
               <div className="space-y-1.5 sm:col-span-2">
-                <label htmlFor="intake-contact" className="block text-xs font-bold text-slate-600 uppercase">Contact Number</label>
+                <label htmlFor="intake-contact" className="block text-xs font-bold text-text-secondary uppercase tracking-wider">Contact Number*</label>
                 <input
                   type="text"
                   id="intake-contact"
                   placeholder="e.g. +63 917 123 4567"
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
-                  className={`w-full bg-white border rounded-2xl px-4 py-2.5 text-sm font-medium focus:ring-1 focus:ring-cyan-600
-                    ${errors.contact ? 'border-red-400 focus:border-red-400' : 'border-slate-300 focus:border-cyan-600'}
+                  className={`w-full bg-white border rounded px-3 py-2 text-sm font-medium focus:ring-1 focus:ring-primary focus:border-primary outline-none h-11
+                    ${errors.contact ? 'border-danger' : 'border-border'}
                   `}
                 />
-                {errors.contact && <p className="text-[11px] text-red-500 font-semibold">{errors.contact}</p>}
+                {errors.contact && <p className="text-[11px] text-danger font-semibold">{errors.contact}</p>}
               </div>
 
               {/* Address */}
               <div className="space-y-1.5 sm:col-span-2">
-                <label htmlFor="intake-address" className="block text-xs font-bold text-slate-600 uppercase">Residential Address</label>
+                <label htmlFor="intake-address" className="block text-xs font-bold text-text-secondary uppercase tracking-wider">Residential Address*</label>
                 <input
                   type="text"
                   id="intake-address"
-                  placeholder="e.g. Apartment 4B, Blue Ridge Condominium, Quezon City"
+                  placeholder="e.g. 45 Rizal Street, Barangay Central, Makati City"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  className={`w-full bg-white border rounded-2xl px-4 py-2.5 text-sm font-medium focus:ring-1 focus:ring-cyan-600
-                    ${errors.address ? 'border-red-400 focus:border-red-400' : 'border-slate-300 focus:border-cyan-600'}
+                  className={`w-full bg-white border rounded px-3 py-2 text-sm font-medium focus:ring-1 focus:ring-primary focus:border-primary outline-none h-11
+                    ${errors.address ? 'border-danger' : 'border-border'}
                   `}
                 />
-                {errors.address && <p className="text-[11px] text-red-500 font-semibold">{errors.address}</p>}
+                {errors.address && <p className="text-[11px] text-danger font-semibold">{errors.address}</p>}
               </div>
             </div>
 
             {/* DYNAMIC GUARDIAN FIELDS FOR MINORS */}
-            <AnimatePresence>
-              {isMinor && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="bg-amber-50/50 border border-amber-200/60 p-4 rounded-xl space-y-4"
-                >
-                  <div className="flex items-center gap-2 text-amber-800">
-                    <AlertTriangle className="h-5 w-5" />
-                    <div>
-                      <h5 className="text-xs font-bold uppercase tracking-wider">Minor Onboarding Required</h5>
-                      <p className="text-[11px] text-amber-700 font-medium">Under PH regulations, legal guardians must authorize dental operations.</p>
-                    </div>
+            {isMinor && (
+              <div className="bg-amber-50 border border-amber-200 p-4 rounded space-y-3.5">
+                <div className="flex items-start gap-2 text-amber-800">
+                  <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                  <div>
+                    <h5 className="text-xs font-bold uppercase tracking-wider">Minor Onboarding Requirements</h5>
+                    <p className="text-[11px] text-amber-700 font-medium">Under clinical operations protocols, a legal parent or guardian must authorize procedures.</p>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label htmlFor="intake-guardian-name" className="block text-[10px] font-bold text-amber-800 uppercase">Guardian Full Name</label>
-                      <input
-                        type="text"
-                        id="intake-guardian-name"
-                        placeholder="Parent or authorized legal guardian"
-                        value={guardianName}
-                        onChange={(e) => setGuardianName(e.target.value)}
-                        className="w-full bg-white border border-amber-300 rounded-2xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-amber-500"
-                      />
-                      {errors.guardianName && <p className="text-[10px] text-red-600 font-semibold">{errors.guardianName}</p>}
-                    </div>
-                    <div className="space-y-1">
-                      <label htmlFor="intake-guardian-contact" className="block text-[10px] font-bold text-amber-800 uppercase">Guardian Contact</label>
-                      <input
-                        type="text"
-                        id="intake-guardian-contact"
-                        placeholder="Contact number of legal guardian"
-                        value={guardianContact}
-                        onChange={(e) => setGuardianContact(e.target.value)}
-                        className="w-full bg-white border border-amber-300 rounded-2xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-amber-500"
-                      />
-                      {errors.guardianContact && <p className="text-[10px] text-red-600 font-semibold">{errors.guardianContact}</p>}
-                    </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label htmlFor="intake-guardian-name" className="block text-[10px] font-bold text-amber-800 uppercase tracking-wider">Guardian Full Name*</label>
+                    <input
+                      type="text"
+                      id="intake-guardian-name"
+                      placeholder="Parent / Legal Guardian"
+                      value={guardianName}
+                      onChange={(e) => setGuardianName(e.target.value)}
+                      className="w-full bg-white border border-amber-300 rounded px-3 py-1.5 text-xs font-medium focus:ring-1 focus:ring-amber-500 outline-none h-9"
+                    />
+                    {errors.guardianName && <p className="text-[10px] text-danger font-semibold mt-0.5">{errors.guardianName}</p>}
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  <div className="space-y-1">
+                    <label htmlFor="intake-guardian-contact" className="block text-[10px] font-bold text-amber-800 uppercase tracking-wider">Guardian Contact*</label>
+                    <input
+                      type="text"
+                      id="intake-guardian-contact"
+                      placeholder="Contact number of guardian"
+                      value={guardianContact}
+                      onChange={(e) => setGuardianContact(e.target.value)}
+                      className="w-full bg-white border border-amber-300 rounded px-3 py-1.5 text-xs font-medium focus:ring-1 focus:ring-amber-500 outline-none h-9"
+                    />
+                    {errors.guardianContact && <p className="text-[10px] text-danger font-semibold mt-0.5">{errors.guardianContact}</p>}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* DYNAMIC TAX & ID FOR SENIORS/PWDS */}
-            <div className="border-t border-slate-100 pt-5 space-y-4">
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                Statutory Exemption Eligibility
+            <div className="border-t border-border pt-4 space-y-4">
+              <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider">
+                Statutory Exemption Status
               </label>
-              <div className="grid grid-cols-2 gap-4">
-                <label className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer select-none transition-all
-                  ${isSenior ? 'bg-cyan-50/30 border-cyan-500 font-bold' : 'bg-white border-slate-200'}
-                `}>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label className="flex items-start gap-2.5 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     id="intake-senior-checkbox"
                     checked={isSenior}
                     onChange={(e) => setIsSenior(e.target.checked)}
-                    className="h-5 w-5 rounded-xl border-slate-300 text-cyan-700 focus:ring-cyan-500"
+                    className="h-4 w-4 border-border rounded text-primary focus:ring-primary mt-0.5 shrink-0"
                   />
                   <div>
-                    <span className="block text-sm font-bold text-slate-800">Senior Citizen</span>
-                    <span className="block text-[10px] text-slate-500">60+ Eligible for VAT-exempt + 20%</span>
+                    <span className="block text-xs font-bold text-text-primary">Senior Citizen Discount</span>
+                    <span className="block text-[11px] text-text-muted mt-0.5">60+ years old. Entitled to 20% discount + VAT exemption (PH OSCA).</span>
                   </div>
                 </label>
 
-                <label className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer select-none transition-all
-                  ${isPwd ? 'bg-cyan-50/30 border-cyan-500 font-bold' : 'bg-white border-slate-200'}
-                `}>
+                <label className="flex items-start gap-2.5 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     id="intake-pwd-checkbox"
                     checked={isPwd}
                     onChange={(e) => setIsPwd(e.target.checked)}
-                    className="h-5 w-5 rounded-xl border-slate-300 text-cyan-700 focus:ring-cyan-500"
+                    className="h-4 w-4 border-border rounded text-primary focus:ring-primary mt-0.5 shrink-0"
                   />
                   <div>
-                    <span className="block text-sm font-bold text-slate-800">PWD Status</span>
-                    <span className="block text-[10px] text-slate-500">Persons with Disability exemption</span>
+                    <span className="block text-xs font-bold text-text-primary">PWD Status Discount</span>
+                    <span className="block text-[11px] text-text-muted mt-0.5">Person with Disability. Entitled to 20% discount + VAT exemption.</span>
                   </div>
                 </label>
               </div>
 
               {(isSenior || isPwd) && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3.5"
-                >
-                  <span className="block text-xs font-bold text-slate-700">Official Exemption Verification Data</span>
+                <div className="bg-[#F8F7F5] border border-border p-4 rounded space-y-3">
+                  <span className="block text-xs font-bold text-text-primary leading-none">Exemption Identification Credentials</span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label htmlFor="intake-sc-pwd-id" className="block text-[10px] font-bold text-slate-600 uppercase">OSCA / PWD ID Number</label>
+                      <label htmlFor="intake-sc-pwd-id" className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider">OSCA / PWD ID Number*</label>
                       <input
                         type="text"
                         id="intake-sc-pwd-id"
-                        placeholder="ID printed on OSCA/PWD Card"
+                        placeholder="Required for billing verification"
                         value={scPwdIdNumber}
                         onChange={(e) => setScPwdIdNumber(e.target.value)}
-                        className={`w-full bg-white border rounded-2xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-cyan-600
-                          ${errors.scPwdIdNumber ? 'border-red-300' : 'border-slate-300'}
+                        className={`w-full bg-white border rounded px-3 py-1.5 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary outline-none h-9
+                          ${errors.scPwdIdNumber ? 'border-danger' : 'border-border'}
                         `}
                       />
-                      {errors.scPwdIdNumber && <p className="text-[10px] text-red-500 font-semibold">{errors.scPwdIdNumber}</p>}
+                      {errors.scPwdIdNumber && <p className="text-[10px] text-danger font-semibold mt-0.5">{errors.scPwdIdNumber}</p>}
                     </div>
 
                     <div className="space-y-1">
-                      <label htmlFor="intake-tin" className="block text-[10px] font-bold text-slate-600 uppercase">TIN (Optional)</label>
+                      <label htmlFor="intake-tin" className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider">TIN Snapshot (Optional)</label>
                       <input
                         type="text"
                         id="intake-tin"
                         placeholder="Tax Identification Number"
                         value={tin}
                         onChange={(e) => setTin(e.target.value)}
-                        className="w-full bg-white border border-slate-300 rounded-2xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-cyan-600"
+                        className="w-full bg-white border border-border rounded px-3 py-1.5 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary outline-none h-9"
                       />
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )}
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* STEP 2: MEDICAL HISTORY & ALLERGIES */}
         {step === 1 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
-            <div className="border-b border-slate-100 pb-3">
-              <h4 className="text-base font-bold text-slate-800">2. Clinical Background & Drug Allergies</h4>
-              <p className="text-xs text-slate-500">Critical safety protocols. Allergies surface prominently across dentist visits.</p>
+          <div className="space-y-5">
+            <div className="border-b border-border pb-2.5">
+              <h4 className="text-sm font-bold text-text-primary">2. Medical Carousels & Allergies</h4>
+              <p className="text-xs text-text-muted">Clinical records that govern patient safety flags during charting.</p>
             </div>
 
-            {/* Drug Allergies Tagging */}
+            {/* Drug Allergies Section */}
             <div className="space-y-3">
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                Drug Allergies / Material Allergies
+              <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider">
+                Drug / Material Allergies
               </label>
               <div className="flex flex-wrap gap-2">
                 {['Lidocaine', 'Penicillin', 'Latex', 'Aspirin', 'Amoxicillin', 'Erythromycin'].map(substance => {
@@ -458,238 +449,247 @@ export const NewPatientIntake: React.FC<NewPatientIntakeProps> = ({
                       key={substance}
                       type="button"
                       onClick={() => handleAllergyToggle(substance)}
-                      className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-all cursor-pointer flex items-center gap-1
+                      className={`px-3 py-1.5 text-xs font-bold rounded-full border transition-all cursor-pointer flex items-center gap-1.5 leading-none
                         ${isTagged
                           ? isLidocaine
-                            ? 'bg-red-500 text-white border-red-600 shadow-sm'
-                            : 'bg-amber-500 text-white border-amber-600 shadow-sm'
-                          : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300'
+                            ? 'bg-danger text-white border-danger'
+                            : 'bg-[#B45309] text-white border-[#B45309]'
+                          : 'bg-white text-text-secondary border-border hover:border-text-muted'
                         }
                       `}
                     >
                       {isTagged && <AlertTriangle className="h-3 w-3" />}
-                      {substance} {isLidocaine && isTagged && '(High Danger)'}
+                      {substance} {isLidocaine && isTagged && '(High Risk)'}
                     </button>
                   );
                 })}
               </div>
 
-              {/* Custom Allergy Entry */}
-              <div className="flex gap-2 max-w-sm mt-2">
+              {/* Custom Allergy */}
+              <div className="flex gap-2 max-w-sm pt-1">
                 <input
                   type="text"
-                  placeholder="Add other custom allergy substance..."
+                  placeholder="Custom allergy substance..."
                   value={allergyCustomInput}
                   onChange={(e) => setAllergyCustomInput(e.target.value)}
-                  className="flex-1 bg-white border border-slate-300 rounded-2xl px-3 py-1.5 text-xs font-medium focus:ring-1 focus:ring-cyan-600 focus:border-cyan-600"
+                  className="flex-1 bg-white border border-border rounded px-3 py-1.5 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary outline-none h-9"
                 />
                 <button
                   type="button"
                   onClick={handleCustomAllergyAdd}
-                  className="px-3 py-1.5 bg-slate-800 text-white hover:bg-slate-900 rounded-xl text-xs font-bold transition-all min-h-[44px]"
+                  className="px-3 py-1.5 bg-[#1F2933] text-white hover:bg-slate-800 rounded text-xs font-bold transition-all min-h-[36px] cursor-pointer"
                 >
-                  Add Custom
+                  Add
                 </button>
               </div>
             </div>
 
-            {/* Medical History Checklist */}
-            <div className="border-t border-slate-100 pt-5 space-y-4">
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+            {/* Medical Questionnaire Table */}
+            <div className="border-t border-border pt-4 space-y-4">
+              <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider">
                 Systemic Medical Questionnaire
               </label>
 
-              <div className="space-y-3.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {DEFAULT_MEDICAL_QUESTIONS.map(q => {
                   const data = medicalAnswers[q.id];
                   return (
-                    <div
-                      key={q.id}
-                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-slate-50/50 border border-slate-100 rounded-xl gap-3"
-                    >
-                      <div className="flex-1">
-                        <span className="text-sm font-semibold text-slate-800 leading-tight block">{q.questionText}</span>
-                        {data.answer && (
+                    <div key={q.id} className="p-4 bg-white border border-border rounded space-y-3 transition-colors hover:bg-[#F8F7F5]/50">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <span className="text-xs font-bold text-text-primary leading-relaxed">{q.questionText}</span>
+                        
+                        {/* Selector Toggles */}
+                        <div className="flex bg-[#F1F5F9] p-0.5 rounded text-xs w-[100px] border border-border h-8 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setMedicalAnswers({
+                              ...medicalAnswers,
+                              [q.id]: { ...data, answer: false }
+                            })}
+                            className={`flex-1 text-[10px] font-bold rounded transition-all cursor-pointer ${
+                              !data.answer ? 'bg-white text-text-primary shadow-xs' : 'text-text-muted hover:text-text-primary'
+                            }`}
+                          >
+                            No
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMedicalAnswers({
+                              ...medicalAnswers,
+                              [q.id]: { ...data, answer: true }
+                            })}
+                            className={`flex-1 text-[10px] font-bold rounded transition-all cursor-pointer ${
+                              data.answer ? 'bg-danger text-white' : 'text-text-muted hover:text-text-primary'
+                            }`}
+                          >
+                            Yes
+                          </button>
+                        </div>
+                      </div>
+
+                      {data.answer && (
+                        <div className="pt-1">
                           <input
                             type="text"
-                            placeholder="Add explanation/medications/clinical instructions..."
+                            placeholder="Please specify conditions, drugs, or clinical notes..."
                             value={data.notes}
                             onChange={(e) => setMedicalAnswers({
                               ...medicalAnswers,
                               [q.id]: { ...data, notes: e.target.value }
                             })}
-                            className="mt-2 w-full bg-white border border-slate-200 rounded-2xl px-2.5 py-1 text-xs font-medium text-slate-700 placeholder-slate-400 focus:ring-1 focus:ring-cyan-600"
+                            className="w-full bg-white border border-border rounded px-3 py-1.5 text-xs font-medium text-text-primary placeholder-text-muted focus:ring-1 focus:ring-primary focus:border-primary outline-none h-9"
                           />
-                        )}
-                      </div>
-
-                      {/* YES/NO Toggle */}
-                      <div className="flex bg-slate-200/80 p-0.5 rounded-xl h-[34px] w-[110px] self-end sm:self-center">
-                        <button
-                          type="button"
-                          onClick={() => setMedicalAnswers({
-                            ...medicalAnswers,
-                            [q.id]: { ...data, answer: false }
-                          })}
-                          className={`flex-1 text-[11px] font-bold rounded-xl transition-all ${
-                            !data.answer ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'
-                          }`}
-                        >
-                          No
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setMedicalAnswers({
-                            ...medicalAnswers,
-                            [q.id]: { ...data, answer: true }
-                          })}
-                          className={`flex-1 text-[11px] font-bold rounded-xl transition-all ${
-                            data.answer ? 'bg-red-500 text-white shadow-sm' : 'text-slate-500'
-                          }`}
-                        >
-                          Yes
-                        </button>
-                      </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* STEP 3: CONSENTS */}
         {step === 2 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
-            <div className="border-b border-slate-100 pb-3">
-              <h4 className="text-base font-bold text-slate-800">3. Legal Consent & PH RA 10173 Compliance</h4>
-              <p className="text-xs text-slate-500">Explicit legal permissions are captured digitally with tamper-proof version stamps.</p>
+          <div className="space-y-5">
+            <div className="border-b border-border pb-2.5">
+              <h4 className="text-sm font-bold text-text-primary">3. Legal Authorization & Privacy Consents</h4>
+              <p className="text-xs text-text-muted">Under PH law, digital consents serve as formal authorization and must be acknowledged.</p>
             </div>
 
-            <div className="space-y-4">
-              {/* Data Privacy Consent - MANDATORY */}
-              <label className={`flex items-start gap-4 p-4 border rounded-xl cursor-pointer transition-all select-none
-                ${consentDataPrivacy ? 'bg-emerald-50/20 border-emerald-500' : 'bg-white border-slate-200'}
-              `}>
-                <input
-                  type="checkbox"
-                  id="intake-privacy-consent"
-                  checked={consentDataPrivacy}
-                  onChange={(e) => setConsentDataPrivacy(e.target.checked)}
-                  className="h-5 w-5 mt-0.5 rounded-xl border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                />
-                <div className="space-y-1">
-                  <span className="block text-sm font-bold text-slate-800 flex items-center gap-1.5">
-                    Data Privacy Consent (RA 10173) <span className="text-[9px] font-mono tabular-nums bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-xl uppercase">Required</span>
-                  </span>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    I authorize Echevaria Dental Clinic to collect and process my health data and medical records strictly in compliance with the <strong className="text-slate-600">Philippine Data Privacy Act of 2012 (RA 10173)</strong> for dental operations.
-                  </p>
-                  <span className="block text-[10px] text-slate-400 font-mono tabular-nums">Form Document Version: v1.2-Standard-Data-Privacy-PH-RA10173</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              {/* Data Privacy Consent - REQUIRED */}
+              <div className="space-y-2">
+                <div className="flex items-start gap-2.5 select-none">
+                  <input
+                    type="checkbox"
+                    id="intake-privacy-consent"
+                    checked={consentDataPrivacy}
+                    onChange={(e) => setConsentDataPrivacy(e.target.checked)}
+                    className="h-4 w-4 text-emerald-600 border-border rounded focus:ring-emerald-500 mt-1 shrink-0"
+                  />
+                  <div className="flex-1">
+                    <label htmlFor="intake-privacy-consent" className="text-sm font-bold text-text-primary flex items-center gap-1.5 cursor-pointer">
+                      Data Privacy Consent (RA 10173)* 
+                      <span className="text-[9px] font-mono bg-emerald-50 text-emerald-800 border border-emerald-200 px-1.5 py-0.5 rounded uppercase leading-none font-bold">Required</span>
+                    </label>
+                    <p className="text-xs text-text-secondary mt-1 leading-relaxed">
+                      I authorize Echevaria Dental Clinic to collect, process, and retain my health data and medical records strictly in compliance with the <strong className="text-text-primary">Philippine Data Privacy Act of 2012 (RA 10173)</strong>.
+                    </p>
+                    {/* scrollable text */}
+                    <div className="mt-2 text-[10px] font-mono text-text-muted bg-[#F8F7F5] border border-border rounded p-3 h-16 overflow-y-auto leading-relaxed">
+                      STANDARD CONTRACT STATEMENT v1.2-PH-RA10173: Patient health records including clinical history, diagnoses, radiographic imaging, and ledger balance statements are subject to medical secrecy. Access is restricted to authorized clinic operators. Data retention is set to 15 years from the last treatment date.
+                    </div>
+                  </div>
                 </div>
-              </label>
+              </div>
 
-              {/* General Treatment Consent - MANDATORY */}
-              <label className={`flex items-start gap-4 p-4 border rounded-xl cursor-pointer transition-all select-none
-                ${consentTreatment ? 'bg-emerald-50/20 border-emerald-500' : 'bg-white border-slate-200'}
-              `}>
-                <input
-                  type="checkbox"
-                  id="intake-treatment-consent"
-                  checked={consentTreatment}
-                  onChange={(e) => setConsentTreatment(e.target.checked)}
-                  className="h-5 w-5 mt-0.5 rounded-xl border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                />
-                <div className="space-y-1">
-                  <span className="block text-sm font-bold text-slate-800 flex items-center gap-1.5">
-                    General Treatment & Clinical Consent <span className="text-[9px] font-mono tabular-nums bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-xl uppercase">Required</span>
-                  </span>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    I voluntarily consent to oral diagnostics, standard dental cleaning, local anesthetics, and preventive clinical care performed by licensed dentists of this clinic.
-                  </p>
-                  <span className="block text-[10px] text-slate-400 font-mono tabular-nums">Form Document Version: v1.0-General-Treatment-Consent</span>
+              {/* General Treatment Consent - REQUIRED */}
+              <div className="space-y-2">
+                <div className="flex items-start gap-2.5 select-none">
+                  <input
+                    type="checkbox"
+                    id="intake-treatment-consent"
+                    checked={consentTreatment}
+                    onChange={(e) => setConsentTreatment(e.target.checked)}
+                    className="h-4 w-4 text-emerald-600 border-border rounded focus:ring-emerald-500 mt-1 shrink-0"
+                  />
+                  <div className="flex-1">
+                    <label htmlFor="intake-treatment-consent" className="text-sm font-bold text-text-primary flex items-center gap-1.5 cursor-pointer">
+                      General Treatment & Clinical Consent*
+                      <span className="text-[9px] font-mono bg-emerald-50 text-emerald-800 border border-emerald-200 px-1.5 py-0.5 rounded uppercase leading-none font-bold">Required</span>
+                    </label>
+                    <p className="text-xs text-text-secondary mt-1 leading-relaxed">
+                      I voluntarily authorize the licensed clinical staff of Echevaria Dental to perform diagnostic cleanings, oral examinations, and local anesthetic administrations.
+                    </p>
+                    <div className="mt-2 text-[10px] font-mono text-text-muted bg-[#F8F7F5] border border-border rounded p-3 h-16 overflow-y-auto leading-relaxed">
+                      STANDARD CLINICAL AGREEMENT v1.0: Diagnostics include visual exams, periodontal probing, and study models. Standard treatments involve scaling and root planing, fluoride applications, and local anesthetics (Mepivacaine/Lidocaine). Any surgical risks or deviations will be explained by the treating dentist.
+                    </div>
+                  </div>
                 </div>
-              </label>
+              </div>
 
               {/* Radiograph Consent - OPTIONAL */}
-              <label className={`flex items-start gap-4 p-4 border rounded-xl cursor-pointer transition-all select-none
-                ${consentRadiograph ? 'bg-slate-50 border-slate-400' : 'bg-white border-slate-200'}
-              `}>
-                <input
-                  type="checkbox"
-                  id="intake-radiograph-consent"
-                  checked={consentRadiograph}
-                  onChange={(e) => setConsentRadiograph(e.target.checked)}
-                  className="h-5 w-5 mt-0.5 rounded-xl border-slate-300 text-cyan-700 focus:ring-cyan-500"
-                />
-                <div className="space-y-1">
-                  <span className="block text-sm font-bold text-slate-800 flex items-center gap-1.5">
-                    Radiology & Imaging Authorization <span className="text-[9px] font-mono tabular-nums bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-xl uppercase">Optional</span>
-                  </span>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    I authorize clinical diagnostic x-rays (periapical, panoramic, or bitewing) as requested by the dentist to properly evaluate sub-surface dental pathologies.
-                  </p>
-                  <span className="block text-[10px] text-slate-400 font-mono tabular-nums">Form Document Version: v1.0-Radiology-Authorization</span>
+              <div className="space-y-2">
+                <div className="flex items-start gap-2.5 select-none">
+                  <input
+                    type="checkbox"
+                    id="intake-radiograph-consent"
+                    checked={consentRadiograph}
+                    onChange={(e) => setConsentRadiograph(e.target.checked)}
+                    className="h-4 w-4 text-primary border-border rounded focus:ring-primary mt-1 shrink-0"
+                  />
+                  <div className="flex-1">
+                    <label htmlFor="intake-radiograph-consent" className="text-sm font-bold text-text-primary flex items-center gap-1.5 cursor-pointer">
+                      Radiology & Imaging Authorization
+                      <span className="text-[9px] font-mono bg-[#F1F5F9] text-text-muted px-1.5 py-0.5 rounded uppercase leading-none font-bold">Optional</span>
+                    </label>
+                    <p className="text-xs text-text-secondary mt-1 leading-relaxed">
+                      I authorize the capture of dental radiographs (x-rays) as needed for internal diagnostic tracing and analysis.
+                    </p>
+                  </div>
                 </div>
-              </label>
+              </div>
 
               {/* Extraction Consent - OPTIONAL */}
-              <label className={`flex items-start gap-4 p-4 border rounded-xl cursor-pointer transition-all select-none
-                ${consentExtraction ? 'bg-slate-50 border-slate-400' : 'bg-white border-slate-200'}
-              `}>
-                <input
-                  type="checkbox"
-                  id="intake-extraction-consent"
-                  checked={consentExtraction}
-                  onChange={(e) => setConsentExtraction(e.target.checked)}
-                  className="h-5 w-5 mt-0.5 rounded-xl border-slate-300 text-cyan-700 focus:ring-cyan-500"
-                />
-                <div className="space-y-1">
-                  <span className="block text-sm font-bold text-slate-800 flex items-center gap-1.5">
-                    Surgical Extraction & Minor Surgery Consent <span className="text-[9px] font-mono tabular-nums bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-xl uppercase">Optional</span>
-                  </span>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    I acknowledge and consent to minor oral surgeries, including surgical tooth extractions, under local anesthesia with full disclosure of typical post-op conditions.
-                  </p>
-                  <span className="block text-[10px] text-slate-400 font-mono tabular-nums">Form Document Version: v1.1-Surgical-Extraction-Consent</span>
+              <div className="space-y-2">
+                <div className="flex items-start gap-2.5 select-none">
+                  <input
+                    type="checkbox"
+                    id="intake-extraction-consent"
+                    checked={consentExtraction}
+                    onChange={(e) => setConsentExtraction(e.target.checked)}
+                    className="h-4 w-4 text-primary border-border rounded focus:ring-primary mt-1 shrink-0"
+                  />
+                  <div className="flex-1">
+                    <label htmlFor="intake-extraction-consent" className="text-sm font-bold text-text-primary flex items-center gap-1.5 cursor-pointer">
+                      Surgical Extraction Consent
+                      <span className="text-[9px] font-mono bg-[#F1F5F9] text-text-muted px-1.5 py-0.5 rounded uppercase leading-none font-bold">Optional</span>
+                    </label>
+                    <p className="text-xs text-text-secondary mt-1 leading-relaxed">
+                      I acknowledge and authorize surgical tooth extractions under local anesthesia as direct treatments.
+                    </p>
+                  </div>
                 </div>
-              </label>
+              </div>
             </div>
 
+            {/* Error notifications */}
             {errors.consentDataPrivacy && (
-              <p className="text-xs text-red-500 font-semibold bg-red-50 border border-red-200 p-3 rounded-xl flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
+              <div className="flex items-center gap-2 text-danger text-xs font-bold bg-red-50 border border-red-200 p-3 rounded">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
                 {errors.consentDataPrivacy}
-              </p>
+              </div>
             )}
             {errors.consentTreatment && !errors.consentDataPrivacy && (
-              <p className="text-xs text-red-500 font-semibold bg-red-50 border border-red-200 p-3 rounded-xl flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
+              <div className="flex items-center gap-2 text-danger text-xs font-bold bg-red-50 border border-red-200 p-3 rounded">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
                 {errors.consentTreatment}
-              </p>
+              </div>
             )}
 
             {/* Audit compliance footnote */}
-            <div className="bg-slate-50 p-4 rounded-xl text-xs text-slate-500 border border-slate-200/60 leading-relaxed">
-              <span className="font-bold text-slate-700 flex items-center gap-1 mb-1">
-                <UserCheck className="h-4 w-4 text-cyan-700" />
-                Intake Attestation:
+            {/* ponytail: consent inputs are simple checkbox controls. In production, this should integrate with a drawing canvas or signature pad for legal e-signatures. */}
+            <div className="bg-[#F8F7F5] border border-border p-4 rounded text-xs text-text-secondary leading-relaxed">
+              <span className="font-bold text-text-primary flex items-center gap-1.5 mb-1.5">
+                <Shield className="h-4 w-4 text-primary" />
+                Session Intake Attestation
               </span>
-              Onboarding logged by <strong className="text-slate-700">{currentUser.displayName} (Dentist)</strong> on {new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}. This record represents legally acknowledged consent under standard medical operations.
+              Onboarding logged by dentist <strong className="text-text-primary">{currentUser.displayName}</strong>. This record represents legally acknowledged consent under standard medical operations.
             </div>
-          </motion.div>
+          </div>
         )}
 
       </div>
 
-      {/* Intake Wizard Action Bar */}
-      <div className="bg-slate-50 border-t border-slate-100 p-6 flex items-center justify-between gap-4">
+      {/* Action Bar (Flat borders, standard 44px buttons) */}
+      <div className="bg-[#F8F7F5] border-t border-border p-6 flex items-center justify-between gap-4">
         {step > 0 ? (
           <button
             type="button"
             id="intake-prev-btn"
             onClick={handlePrev}
-            className="py-2.5 px-5 border border-slate-300 bg-white hover:bg-slate-50 rounded-xl font-bold text-sm text-slate-700 transition-all flex items-center gap-1 cursor-pointer min-h-[44px]"
+            className="py-2 px-5 border border-border bg-white hover:bg-background rounded font-bold text-sm text-text-primary transition-all flex items-center gap-1.5 cursor-pointer min-h-[44px]"
           >
             <ChevronLeft className="h-4 w-4" /> Back
           </button>
@@ -698,7 +698,7 @@ export const NewPatientIntake: React.FC<NewPatientIntakeProps> = ({
             type="button"
             id="intake-cancel-btn"
             onClick={onCancel}
-            className="py-2.5 px-5 border border-slate-300 bg-white hover:bg-slate-50 rounded-xl font-bold text-sm text-slate-500 transition-all cursor-pointer min-h-[44px]"
+            className="py-2 px-5 border border-border bg-white hover:bg-background rounded font-bold text-sm text-text-secondary transition-all cursor-pointer min-h-[44px]"
           >
             Cancel Onboarding
           </button>
@@ -709,7 +709,7 @@ export const NewPatientIntake: React.FC<NewPatientIntakeProps> = ({
             type="button"
             id="intake-next-btn"
             onClick={handleNext}
-            className="py-2.5 px-6 bg-cyan-700 hover:bg-cyan-800 text-white rounded-xl font-bold text-sm shadow-sm transition-all flex items-center gap-1 cursor-pointer min-h-[44px]"
+            className="py-2 px-6 bg-primary hover:bg-primary-hover text-white rounded font-bold text-sm transition-all flex items-center gap-1.5 cursor-pointer min-h-[44px]"
           >
             Continue <ChevronRight className="h-4 w-4" />
           </button>
@@ -718,9 +718,9 @@ export const NewPatientIntake: React.FC<NewPatientIntakeProps> = ({
             type="button"
             id="intake-submit-btn"
             onClick={handleSubmit}
-            className="py-3 px-8 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm shadow-sm hover:shadow-sm transition-all flex items-center gap-1.5 cursor-pointer min-h-[44px]"
+            className="py-2 px-6 bg-success hover:bg-green-700 text-white rounded font-bold text-sm transition-all flex items-center gap-2 cursor-pointer min-h-[44px]"
           >
-            <ShieldCheck className="h-4 w-4" />
+            <Shield className="h-4 w-4" />
             Complete & Save Intake
           </button>
         )}

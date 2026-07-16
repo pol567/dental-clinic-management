@@ -5,3 +5,8 @@ coverage/
 *.log
 .env*
 !.env.example
+.antigravity/
+.vscode/
+*.tsbuildinfo
+__pycache__/
+.pytest_cache/

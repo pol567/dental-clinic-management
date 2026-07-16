@@ -3,8 +3,7 @@
 import React, { useState } from 'react';
 import { useClinic } from '@/lib/clinic-state';
 import { SEED_USERS } from '@/lib/types';
-import { Shield, Key, Eye, EyeOff, CheckCircle2, FileLock2 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Shield, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 interface LoginFormProps {
   onLoginSuccess: () => void;
@@ -16,6 +15,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
   const [password, setPassword] = useState('••••••••••••');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [capsLockActive, setCapsLockActive] = useState(false);
 
   const handleRoleChange = (role: 'dentist' | 'staff') => {
     setSelectedRole(role);
@@ -35,84 +35,73 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div id="login-screen-wrapper" className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-[#F8F7F5]">
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="max-w-md w-full bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden"
+    <div id="login-screen-wrapper" className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#F8F7F5]">
+      {/* Centered Login Card */}
+      <div 
+        id="login-card-container" 
+        className="max-w-md w-full bg-white border border-border p-8 rounded flex flex-col"
       >
-        {/* Banner with clinic logo aesthetic */}
-        <div className="bg-gradient-to-br from-cyan-700 to-cyan-900 p-8 text-white relative">
-          <div className="absolute right-6 top-6 bg-cyan-600/30 backdrop-blur-md h-12 w-12 rounded-xl flex items-center justify-center border border-white/10">
-            <Shield className="h-6 w-6 text-cyan-200" />
+        {/* Branding & Logo */}
+        <div className="flex flex-col items-center mb-6">
+          <div className="h-11 w-11 bg-primary text-white flex items-center justify-center font-bold text-lg select-none rounded mb-3 leading-none">
+            E
           </div>
-          <span className="text-[10px] uppercase font-bold tracking-widest text-cyan-200">Clinical Portal v1.0</span>
-          <h2 className="text-2xl font-bold mt-2 font-sans tracking-tight">Echevaria Dental</h2>
-          <p className="text-xs text-cyan-100/90 mt-1">Clinic Operations & Patient Ledger Gateway</p>
+          <h1 className="text-lg font-bold text-text-primary leading-none">Login</h1>
+          <p className="text-xs text-text-muted mt-1.5 leading-none">Echevaria Dental Clinic Operations</p>
         </div>
 
-        {/* Login Body */}
-        <form onSubmit={handleLoginSubmit} className="p-8 space-y-6">
-          {/* Role Selection */}
-          <div className="space-y-3">
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Select Authorized Role
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              {(['dentist', 'staff'] as const).map(role => {
-                const isActive = selectedRole === role;
-                const isDentist = role === 'dentist';
-                return (
-                  <button
-                    key={role}
-                    type="button"
-                    id={`login-role-btn-${role}`}
-                    onClick={() => handleRoleChange(role)}
-                    className={`flex flex-col items-start p-4 border rounded-xl transition-all cursor-pointer text-left h-[100px] justify-between
-                      ${isActive
-                        ? 'bg-cyan-50/50 border-cyan-600 ring-2 ring-cyan-500 ring-offset-1 text-cyan-950 font-semibold'
-                        : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
-                      }
-                    `}
-                  >
-                    <div className="flex items-center justify-between w-full">
-                      <span className={`h-6 w-6 rounded-xl flex items-center justify-center text-xs font-bold
-                        ${isActive ? 'bg-cyan-600 text-white' : 'bg-slate-100 text-slate-400'}
-                      `}>
-                        {isDentist ? 'Dr' : 'St'}
-                      </span>
-                      {isActive && <CheckCircle2 className="h-4 w-4 text-cyan-600" />}
-                    </div>
-                    <div>
-                      <span className="block text-sm font-bold capitalize leading-none mb-1">{role}</span>
-                      <span className="block text-[10px] text-slate-500 leading-tight">
-                        {isDentist ? 'Dr. Elena Reyes' : 'Marco Santos'}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
+        {/* Form */}
+        <form onSubmit={handleLoginSubmit} className="space-y-4">
+          
+          {/* Low-Profile Demo Role Selector Segmented Control */}
+          <div className="space-y-1.5">
+            <span className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider">
+              Demo Authentication Domain
+            </span>
+            <div className="flex rounded bg-[#F1F5F9] p-0.5 text-xs">
+              <button
+                type="button"
+                onClick={() => handleRoleChange('dentist')}
+                className={`flex-1 py-1.5 rounded font-medium text-center transition-all cursor-pointer ${
+                  selectedRole === 'dentist'
+                    ? 'bg-white text-text-primary shadow-sm'
+                    : 'text-text-muted hover:text-text-primary'
+                }`}
+              >
+                Dentist (Elena)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRoleChange('staff')}
+                className={`flex-1 py-1.5 rounded font-medium text-center transition-all cursor-pointer ${
+                  selectedRole === 'staff'
+                    ? 'bg-white text-text-primary shadow-sm'
+                    : 'text-text-muted hover:text-text-primary'
+                }`}
+              >
+                Staff (Marco)
+              </button>
             </div>
           </div>
 
-          {/* Simulated Username */}
-          <div className="space-y-2">
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Authorized Email
+          {/* Email Input */}
+          <div className="space-y-1.5">
+            <label htmlFor="login-email-input" className="block text-xs font-bold text-text-secondary uppercase tracking-wider">
+              Your email*
             </label>
             <input
-              type="text"
+              type="email"
+              id="login-email-input"
               readOnly
               value={selectedRole === 'dentist' ? 'elena.reyes@echevariadental.com' : 'marco.santos@echevariadental.com'}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 font-medium focus:outline-none"
+              className="w-full bg-[#F8F7F5] border border-border rounded px-3 py-2 text-sm text-text-primary font-mono focus:outline-none h-11"
             />
           </div>
 
-          {/* Password */}
-          <div className="space-y-2">
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Secret Passcode
+          {/* Password Input */}
+          <div className="space-y-1.5">
+            <label htmlFor="login-password-input" className="block text-xs font-bold text-text-secondary uppercase tracking-wider">
+              Password*
             </label>
             <div className="relative">
               <input
@@ -120,62 +109,61 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                 id="login-password-input"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-2xl pl-4 pr-10 py-3 text-sm text-slate-800 font-mono tabular-nums focus:ring-1 focus:ring-cyan-600 focus:border-cyan-600"
+                onKeyUp={(e) => setCapsLockActive(e.getModifierState('CapsLock'))}
+                onKeyDown={(e) => setCapsLockActive(e.getModifierState('CapsLock'))}
+                className="w-full bg-white border border-border rounded pl-3 pr-10 py-2 text-sm text-text-primary font-mono tracking-wider focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all h-11"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-muted hover:text-slate-600 transition-colors"
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-          </div>
 
-          {/* Submit Action */}
-          <button
-            type="submit"
-            id="login-submit-btn"
-            disabled={loading}
-            className="w-full py-3 px-4 bg-cyan-700 hover:bg-cyan-800 text-white rounded-xl font-bold text-sm shadow-sm hover:shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 min-h-[44px]"
-          >
-            {loading ? (
-              <span className="flex items-center gap-2">
-                <span className="h-4 w-4 border-2 border-white border-t-transparent animate-spin rounded-full"></span>
-                Verifying Credentials...
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <Key className="h-4 w-4" />
-                Sign In securely
-              </span>
-            )}
-          </button>
-
-          {/* Role Access Explanatory Helper Card */}
-          <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs space-y-2 text-slate-600 leading-relaxed">
-            <div className="flex items-center gap-1.5 font-bold text-slate-700 mb-1">
-              <Shield className="h-3.5 w-3.5 text-slate-500" />
-              Role Gating Definition (Asymmetric IA):
-            </div>
-            {selectedRole === 'dentist' ? (
-              <p>
-                <strong className="text-cyan-800">Dentist Access:</strong> Complete operations enabled. Full read/write clinical charting, treatment plan folders, completed procedures list, billing computations with Senior/PWD 20% discounts, and ledger tracking.
-              </p>
-            ) : (
-              <p>
-                <strong className="text-cyan-800">Staff Access:</strong> Restricted operations. Allows lookup by Name or Contact and view of last visit dates ONLY. Access to medical histories, allergies, odontograms, bills, and outstanding balances is blocked.
-              </p>
+            {/* Caps Lock Indicator */}
+            {capsLockActive && (
+              <div className="flex items-center gap-1.5 text-amber-700 text-[11px] font-bold bg-amber-50 border border-amber-200 px-2.5 py-1 rounded mt-1.5">
+                <AlertCircle className="h-3.5 w-3.5 text-amber-700" />
+                Caps Lock is enabled
+              </div>
             )}
           </div>
 
-          {/* PH Data Privacy compliance footnote */}
-          <div className="flex items-center gap-1.5 text-[10px] text-slate-400 justify-center">
-            <FileLock2 className="h-3.5 w-3.5 text-slate-400" />
-            PH Data Privacy Act (RA 10173) Compliant Gateway
+          {/* Submit Button */}
+          <div className="pt-2">
+            <button
+              type="submit"
+              id="login-submit-btn"
+              disabled={loading}
+              className="w-full py-2.5 px-4 bg-primary hover:bg-primary-hover text-white rounded font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 min-h-[44px] cursor-pointer"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 border-2 border-white border-t-transparent animate-spin rounded-full"></span>
+                  Logging in...
+                </span>
+              ) : (
+                <span>Log in</span>
+              )}
+            </button>
           </div>
         </form>
-      </motion.div>
+
+        {/* Forgot Password Link */}
+        <div className="text-center mt-6">
+          <a href="#" className="text-xs text-primary hover:underline font-semibold transition-all">
+            Forgot your password?
+          </a>
+        </div>
+      </div>
+
+      {/* Short PH Data Privacy compliance note */}
+      <div className="text-center mt-8 text-[10px] text-text-muted max-w-xs mx-auto leading-relaxed border-t border-border/60 pt-4 flex items-center justify-center gap-1.5">
+        <Shield className="h-3.5 w-3.5 text-text-muted" />
+        Protected by Data Privacy Act (RA 10173)
+      </div>
     </div>
   );
 };

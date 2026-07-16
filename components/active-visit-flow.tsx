@@ -6,7 +6,7 @@ import { Patient, Visit, Bill, BillItem, PlannedTreatment } from '@/lib/types';
 import { OdontogramChart } from './odontogram-chart';
 import {
   Activity, Check, ChevronRight, Clipboard, ShieldAlert, AlertTriangle, FileText,
-  DollarSign, Landmark, CreditCard, ChevronLeft, Save, Sparkles, CheckCircle2
+  DollarSign, Landmark, CreditCard, ChevronLeft, Save, Sparkles, CheckCircle2, Wallet, AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -34,6 +34,7 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
     finalizeBill,
     recordPayment,
     plannedTreatments,
+    updatePatient,
     currentUser
   } = useClinic();
 
@@ -228,6 +229,15 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
   };
 
   const handleFinalizeBill = () => {
+    // Save SC/PWD ID and TIN to patient record if entered
+    if (patient && (scPwdIdSnapshot.trim() || tinSnapshot.trim())) {
+      updatePatient({
+        ...patient,
+        scPwdIdNumber: scPwdIdSnapshot.trim() || patient.scPwdIdNumber,
+        tin: tinSnapshot.trim() || patient.tin
+      });
+    }
+
     finalizeBill(draftBill!.id, discountType, customDiscountPct);
     const totals = getComputedTotals();
     setPaymentAmount(totals.grandTotal);
@@ -245,43 +255,43 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
   return (
     <div id="active-visit-flow-wrapper" className="max-w-4xl mx-auto space-y-6">
       {/* Top Pinned Patient Identity Context Bar */}
-      <div className="border-b border-slate-200 pb-5 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="border-b border-border pb-5 mb-6 flex flex-col gap-5">
         <div className="flex items-center gap-3.5">
-          <span className="h-10 w-10 bg-cyan-700 text-white rounded-xl flex items-center justify-center font-bold font-mono tabular-nums">
+          <span className="h-10 w-10 bg-primary text-white rounded-xl flex items-center justify-center font-bold font-mono tabular-nums">
             V
           </span>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Active Visit Pinned Context</span>
+              <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider">Active Visit Pinned Context</span>
               {hasLidocaineAllergy && (
                 <span className="text-[9px] bg-red-100 text-red-800 border border-red-300 font-bold px-2 py-0.5 rounded-xl uppercase flex items-center gap-1 animate-pulse">
                   ⚠ LIDOCAINE Allergy Warning
                 </span>
               )}
             </div>
-            <h3 className="text-base font-bold text-slate-800 mt-0.5">{patient.name} ({patient.sex} · {new Date().getFullYear() - new Date(patient.dateOfBirth).getFullYear()} yrs)</h3>
+            <h3 className="text-base font-bold text-text-primary mt-0.5">{patient.name} ({patient.sex} · {new Date().getFullYear() - new Date(patient.dateOfBirth).getFullYear()} yrs)</h3>
           </div>
         </div>
 
         {/* Current Flow Steps Tracker */}
-        <div className="flex items-center gap-1.5 self-start md:self-center">
+        <div className="flex items-center md:justify-center w-full max-w-3xl mx-auto overflow-x-auto py-2">
           {[0, 1, 2, 3, 4].map((stepIdx) => {
             const label = stepIdx === 0 ? 'Demographics' : stepIdx === 1 ? 'Chart & Diag' : stepIdx === 2 ? 'Procedures' : stepIdx === 3 ? 'Billing' : 'Payment';
             const isActive = activeStep === stepIdx;
             const isCompleted = activeStep > stepIdx;
             return (
               <React.Fragment key={stepIdx}>
-                <div className="flex items-center gap-1">
-                  <span className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all
-                    ${isActive ? 'bg-cyan-700 text-white font-bold ring-2 ring-cyan-500 ring-offset-1' : isCompleted ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-500'}
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className={`h-6 w-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-all
+                    ${isActive ? 'bg-primary text-white font-bold ring-2 ring-primary ring-offset-1' : isCompleted ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-text-secondary'}
                   `}>
                     {isCompleted ? '✓' : stepIdx + 1}
                   </span>
-                  <span className={`text-[10px] font-bold hidden sm:block ${isActive ? 'text-slate-800' : 'text-slate-400'}`}>
+                  <span className={`text-[11px] font-bold whitespace-nowrap ${isActive ? 'text-text-primary' : 'text-text-muted'}`}>
                     {label}
                   </span>
                 </div>
-                {stepIdx < 4 && <div className="h-0.5 w-4 bg-slate-200"></div>}
+                {stepIdx < 4 && <div className="h-px bg-slate-200 flex-1 min-w-[20px] mx-3"></div>}
               </React.Fragment>
             );
           })}
@@ -294,11 +304,11 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
         {/* STEP 0: START VISIT DEMOGRAPHICS */}
         {activeStep === 0 && (
           <div className="p-6 sm:p-8 space-y-6">
-            <div className="border-b border-slate-100 pb-3 flex items-center gap-2">
-              <Clipboard className="h-5 w-5 text-cyan-700" />
+            <div className="border-b border-border pb-3 flex items-center gap-2">
+              <Clipboard className="h-5 w-5 text-primary" />
               <div>
-                <h4 className="text-base font-bold text-slate-800">Step 1: Open Visit Encounter</h4>
-                <p className="text-xs text-slate-500">Record chief symptoms and optionally link to a treatment plan folder.</p>
+                <h4 className="text-base font-bold text-text-primary">Step 1: Open Visit Encounter</h4>
+                <p className="text-xs text-text-secondary">Record chief symptoms and optionally link to a treatment plan folder.</p>
               </div>
             </div>
 
@@ -312,7 +322,7 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                   placeholder="e.g. Pain on cold liquids, lower right molar"
                   value={chiefComplaint}
                   onChange={(e) => setChiefComplaint(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded-2xl px-4 py-2.5 text-sm font-semibold focus:ring-1 focus:ring-cyan-600 focus:border-cyan-600"
+                  className="w-full bg-surface border border-border rounded-2xl px-4 py-2.5 text-sm font-semibold focus:ring-1 focus:ring-cyan-600 focus:border-cyan-600"
                 />
               </div>
 
@@ -323,7 +333,7 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                   id="visit-treatment-plan"
                   value={treatmentPlanId || ''}
                   onChange={(e) => setTreatmentPlanId(e.target.value || null)}
-                  className="w-full bg-white border border-slate-300 rounded-2xl px-4 py-2.5 text-sm font-semibold focus:ring-1 focus:ring-cyan-600 focus:border-cyan-600 text-slate-800"
+                  className="w-full bg-surface border border-border rounded-2xl px-4 py-2.5 text-sm font-semibold focus:ring-1 focus:ring-cyan-600 focus:border-cyan-600 text-text-primary"
                 >
                   <option value="">-- No linked plan (Standalone encounter) --</option>
                   {treatmentPlans.filter(tp => tp.patientId === patientId && tp.status === 'active').map(plan => (
@@ -340,24 +350,24 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                   placeholder="Enter initial visual diagnostics, mobility observations, patient description..."
                   value={generalNotes}
                   onChange={(e) => setGeneralNotes(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:bg-white h-24 focus:ring-1 focus:ring-cyan-600 focus:border-cyan-600 font-medium text-slate-800"
+                  className="w-full bg-background border border-border rounded-xl p-3 text-sm focus:bg-surface h-24 focus:ring-1 focus:ring-cyan-600 focus:border-cyan-600 font-medium text-text-primary"
                 />
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 justify-end pt-4 border-t border-slate-100">
+            <div className="flex gap-3 justify-end pt-4 border-t border-border">
               <button
                 onClick={onCloseVisit}
                 id="cancel-visit-flow"
-                className="py-2.5 px-5 border border-slate-300 bg-white hover:bg-slate-50 rounded-xl font-bold text-sm text-slate-600 min-h-[44px]"
+                className="py-2.5 px-5 border border-border bg-surface hover:bg-background rounded-xl font-bold text-sm text-slate-600 min-h-[44px]"
               >
                 Cancel Encounter
               </button>
               <button
                 onClick={handleStartVisit}
                 id="start-visit-encounter"
-                className="py-2.5 px-6 bg-cyan-700 hover:bg-cyan-800 text-white rounded-xl font-bold text-sm shadow-sm flex items-center gap-1 cursor-pointer min-h-[44px]"
+                className="py-2.5 px-6 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold text-sm  flex items-center gap-1 cursor-pointer min-h-[44px]"
               >
                 Open Visit & Start Charting <ChevronRight className="h-4 w-4" />
               </button>
@@ -368,39 +378,39 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
         {/* STEP 1: INTERACTIVE CHARTING & DIAGNOSIS */}
         {activeStep === 1 && (
           <div className="p-6 sm:p-8 space-y-6">
-            <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <div className="border-b border-border pb-3 flex items-center justify-between">
               <div>
-                <h4 className="text-base font-bold text-slate-800">Step 2: Interactive Diagnoses & Charting</h4>
-                <p className="text-xs text-slate-500">Tap teeth on the odontogram to chart conditions, planned P treatments, or notes.</p>
+                <h4 className="text-base font-bold text-text-primary">Step 2: Interactive Diagnoses & Charting</h4>
+                <p className="text-xs text-text-secondary">Tap teeth on the odontogram to chart conditions, planned P treatments, or notes.</p>
               </div>
-              <span className="text-xs font-mono tabular-nums font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded-xl">Visit Active</span>
+              <span className="text-xs font-mono tabular-nums font-bold bg-background text-slate-600 px-2 py-1 rounded-xl">Visit Active</span>
             </div>
 
             {/* Interactive Odontogram Component */}
             <OdontogramChart patientId={patientId} interactive={true} activeVisitId={visitObj?.id} />
 
             {/* Diagnostics Quick Logger */}
-            <div className="bg-slate-50 border border-slate-200/60 p-4 rounded-xl space-y-3">
-              <span className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Fast-Log Diagnosis Encounter Item</span>
+            <div className="bg-background border border-border/60 p-4 rounded-xl space-y-3">
+              <span className="block text-xs font-bold text-text-primary uppercase tracking-wider">Fast-Log Diagnosis Encounter Item</span>
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <input
                   type="text"
                   placeholder="Tooth # (e.g. 36) (Optional)"
                   value={diagnosisTooth}
                   onChange={(e) => setDiagnosisTooth(e.target.value)}
-                  className="sm:col-span-1 bg-white border border-slate-300 rounded-2xl px-3 py-2 text-xs focus:ring-1 focus:ring-cyan-600"
+                  className="sm:col-span-1 bg-surface border border-border rounded-2xl px-3 py-2 text-xs focus:ring-1 focus:ring-cyan-600"
                 />
                 <input
                   type="text"
                   placeholder="Diagnosed dental pathology (e.g. Deep pulpal decay with irreversible pulpitis)"
                   value={diagnosisDesc}
                   onChange={(e) => setDiagnosisDesc(e.target.value)}
-                  className="sm:col-span-2 bg-white border border-slate-300 rounded-2xl px-3 py-2 text-xs focus:ring-1 focus:ring-cyan-600"
+                  className="sm:col-span-2 bg-surface border border-border rounded-2xl px-3 py-2 text-xs focus:ring-1 focus:ring-cyan-600"
                 />
                 <button
                   onClick={handleAddDiagnosis}
                   id="add-diagnosis-log"
-                  className="sm:col-span-1 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold shadow-sm min-h-[44px]"
+                  className="sm:col-span-1 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold  min-h-[44px]"
                 >
                   Log Diagnosis
                 </button>
@@ -408,10 +418,10 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
 
               {/* Logged diagnoses inside this visit */}
               {visitDiagnoses.length > 0 && (
-                <div className="pt-2 border-t border-slate-200 space-y-1.5 max-h-24 overflow-y-auto">
+                <div className="pt-2 border-t border-border space-y-1.5 max-h-24 overflow-y-auto">
                   {visitDiagnoses.map((d, i) => (
-                    <div key={i} className="text-xs text-slate-700 flex items-center gap-2">
-                      <span className="font-bold text-cyan-800">{d.tooth ? `[Tooth ${d.tooth}]` : '[General Case]'}</span>
+                    <div key={i} className="text-xs text-text-primary flex items-center gap-2">
+                      <span className="font-bold text-primary">{d.tooth ? `[Tooth ${d.tooth}]` : '[General Case]'}</span>
                       <span className="font-medium">{d.desc}</span>
                     </div>
                   ))}
@@ -420,11 +430,18 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
             </div>
 
             {/* Navigation Actions */}
-            <div className="flex gap-3 justify-end pt-4 border-t border-slate-100">
+            <div className="flex gap-3 justify-end pt-4 border-t border-border">
+              <button
+                onClick={() => setActiveStep(0)}
+                id="back-to-step-1"
+                className="py-2.5 px-5 border border-border bg-surface hover:bg-background rounded-xl font-bold text-sm text-slate-600 min-h-[44px] flex items-center gap-1 cursor-pointer"
+              >
+                <ChevronLeft className="h-4 w-4" /> Back
+              </button>
               <button
                 onClick={() => setActiveStep(2)}
                 id="proceed-to-procedures"
-                className="py-2.5 px-6 bg-cyan-700 hover:bg-cyan-800 text-white rounded-xl font-bold text-sm shadow-sm flex items-center gap-1 cursor-pointer"
+                className="py-2.5 px-6 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold text-sm  flex items-center gap-1 cursor-pointer min-h-[44px]"
               >
                 Proceed to Treatment Procedures <ChevronRight className="h-4 w-4" />
               </button>
@@ -435,9 +452,9 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
         {/* STEP 2: PERFORM TREATMENT PROCEDURES */}
         {activeStep === 2 && (
           <div className="p-6 sm:p-8 space-y-6">
-            <div className="border-b border-slate-100 pb-3">
-              <h4 className="text-base font-bold text-slate-800">Step 3: Perform Dental Procedures</h4>
-              <p className="text-xs text-slate-500">Candidate procedures are pre-populated directly from teeth flagged as Planned (P) on the odontogram.</p>
+            <div className="border-b border-border pb-3">
+              <h4 className="text-base font-bold text-text-primary">Step 3: Perform Dental Procedures</h4>
+              <p className="text-xs text-text-secondary">Candidate procedures are pre-populated directly from teeth flagged as Planned (P) on the odontogram.</p>
             </div>
 
             {/* Allergy alerts inside procedures */}
@@ -456,32 +473,32 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
               <span className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Candidate Treatments Planned:</span>
 
               {plannedTreatments.filter(pt => pt.patientId === patientId && pt.status === 'planned').length === 0 ? (
-                <p className="text-xs text-slate-400 italic bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <p className="text-xs text-text-muted italic bg-background p-4 rounded-xl border border-border">
                   No planned treatments (P) flagged in the Odontogram. Any procedures performed must be entered manually below.
                 </p>
               ) : (
-                <table className="w-full text-left border-collapse border border-slate-200">
+                <table className="w-full text-left border-collapse border border-border">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase">
-                      <th className="p-2 border-r border-slate-200">Tooth</th>
-                      <th className="p-2 border-r border-slate-200">Description</th>
+                    <tr className="bg-background border-b border-border text-xs font-bold text-text-secondary uppercase">
+                      <th className="p-2 border-r border-border">Tooth</th>
+                      <th className="p-2 border-r border-border">Description</th>
                       <th className="p-2 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {plannedTreatments.filter(pt => pt.patientId === patientId && pt.status === 'planned').map(pt => (
-                      <tr key={pt.id} className="border-b border-slate-200 hover:bg-slate-50">
-                        <td className="p-2 border-r border-slate-200 text-xs font-bold text-cyan-800">
+                      <tr key={pt.id} className="border-b border-border hover:bg-background">
+                        <td className="p-2 border-r border-border text-xs font-bold text-primary">
                           {pt.toothNumber || 'General'}
                         </td>
-                        <td className="p-2 border-r border-slate-200 text-sm font-bold text-slate-800">
+                        <td className="p-2 border-r border-border text-sm font-bold text-text-primary">
                           {pt.description}
                         </td>
                         <td className="p-2 text-right">
                           <button
                             onClick={() => handleCompleteProcedure(pt)}
                             id={`complete-pt-btn-${pt.id}`}
-                            className="py-1 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm inline-flex items-center gap-1 cursor-pointer"
+                            className="py-1 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl  inline-flex items-center gap-1 cursor-pointer"
                           >
                             <Check className="h-3.5 w-3.5" />
                             Complete
@@ -495,27 +512,27 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
             </div>
 
             {/* Add Custom / Standalone Procedures */}
-            <div className="border-t border-slate-100 pt-5 space-y-3">
+            <div className="border-t border-border pt-5 space-y-3">
               <span className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Add Manual Custom Procedure (Not from Chart):</span>
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-150">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-background p-4 rounded-xl border border-border">
                 <div className="space-y-1 sm:col-span-1">
-                  <label htmlFor="proc-tooth" className="block text-[10px] font-bold text-slate-500 uppercase">Tooth #</label>
+                  <label htmlFor="proc-tooth" className="block text-[10px] font-bold text-text-secondary uppercase">Tooth #</label>
                   <input
                     type="text"
                     id="proc-tooth"
                     value={customProcTooth}
                     onChange={(e) => setCustomProcTooth(e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded-2xl px-3 py-2 text-xs focus:ring-1 focus:ring-cyan-600"
+                    className="w-full bg-surface border border-border rounded-2xl px-3 py-2 text-xs focus:ring-1 focus:ring-cyan-600"
                   />
                 </div>
 
                 <div className="space-y-1 sm:col-span-1">
-                  <label htmlFor="proc-type" className="block text-[10px] font-bold text-slate-500 uppercase">Procedure Type</label>
+                  <label htmlFor="proc-type" className="block text-[10px] font-bold text-text-secondary uppercase">Procedure Type</label>
                   <select
                     id="proc-type"
                     value={customProcType}
                     onChange={(e) => setCustomProcType(e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded-2xl px-3 py-2 text-xs text-slate-800 font-medium"
+                    className="w-full bg-surface border border-border rounded-2xl px-3 py-2 text-xs text-text-primary font-medium"
                   >
                     <option value="Composite resin filling">Composite resin filling</option>
                     <option value="Dental prophylaxis (cleaning)">Dental prophylaxis (cleaning)</option>
@@ -526,13 +543,13 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                 </div>
 
                 <div className="space-y-1 sm:col-span-1">
-                  <label htmlFor="proc-price" className="block text-[10px] font-bold text-slate-500 uppercase">Unit Price (₱)</label>
+                  <label htmlFor="proc-price" className="block text-[10px] font-bold text-text-secondary uppercase">Unit Price (₱)</label>
                   <input
                     type="number"
                     id="proc-price"
                     value={customProcPrice}
                     onChange={(e) => setCustomProcPrice(Number(e.target.value))}
-                    className="w-full bg-white border border-slate-300 rounded-2xl px-3 py-2 text-xs font-semibold focus:ring-1 focus:ring-cyan-600"
+                    className="w-full bg-surface border border-border rounded-2xl px-3 py-2 text-xs font-semibold focus:ring-1 focus:ring-cyan-600"
                   />
                 </div>
 
@@ -540,7 +557,7 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                   type="button"
                   onClick={handleAddCustomProcedure}
                   id="add-custom-proc-btn"
-                  className="py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl shadow-sm sm:self-end h-[36px] min-h-[44px]"
+                  className="py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl  sm:self-end h-[36px] min-h-[44px]"
                 >
                   Log Custom Procedure
                 </button>
@@ -549,25 +566,25 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
 
             {/* List of completed procedures inside this visit */}
             {completedProcs.length > 0 && (
-              <div className="border-t border-slate-100 pt-5 space-y-2.5">
+              <div className="border-t border-border pt-5 space-y-2.5">
                 <span className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Completed Treatments & Procedures list:</span>
-                <table className="w-full text-left border-collapse border border-slate-200">
+                <table className="w-full text-left border-collapse border border-border">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase">
-                      <th className="p-2 border-r border-slate-200">Procedure</th>
+                    <tr className="bg-background border-b border-border text-xs font-bold text-text-secondary uppercase">
+                      <th className="p-2 border-r border-border">Procedure</th>
                       <th className="p-2 text-right">Price (₱)</th>
                     </tr>
                   </thead>
                   <tbody>
                     {completedProcs.map((p, idx) => (
-                      <tr key={idx} className="border-b border-slate-200 hover:bg-slate-50">
-                        <td className="p-2 border-r border-slate-200 text-xs font-bold text-slate-800">
+                      <tr key={idx} className="border-b border-border hover:bg-background">
+                        <td className="p-2 border-r border-border text-xs font-bold text-text-primary">
                           <div className="flex items-center gap-2">
                             <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                             <span>{p.type} (Tooth {p.tooth})</span>
                           </div>
                         </td>
-                        <td className="p-2 text-right font-mono tabular-nums font-bold text-slate-700">
+                        <td className="p-2 text-right font-mono tabular-nums font-bold text-text-primary">
                           {p.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </td>
                       </tr>
@@ -578,10 +595,10 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
             )}
 
             {/* Navigation Actions */}
-            <div className="flex gap-3 justify-end pt-4 border-t border-slate-100">
+            <div className="flex gap-3 justify-end pt-4 border-t border-border">
               <button
                 onClick={() => setActiveStep(1)}
-                className="py-2.5 px-5 border border-slate-300 bg-white hover:bg-slate-50 rounded-xl font-bold text-sm text-slate-600 flex items-center gap-1"
+                className="py-2.5 px-5 border border-border bg-surface hover:bg-background rounded-xl font-bold text-sm text-slate-600 flex items-center gap-1"
               >
                 <ChevronLeft className="h-4 w-4" /> Charting
               </button>
@@ -589,7 +606,7 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                 onClick={handleProceedToBilling}
                 disabled={completedProcs.length === 0}
                 id="proceed-to-billing"
-                className="py-2.5 px-6 bg-cyan-700 hover:bg-cyan-800 text-white rounded-xl font-bold text-sm shadow-sm flex items-center gap-1 disabled:opacity-50 cursor-pointer min-h-[44px]"
+                className="py-2.5 px-6 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold text-sm  flex items-center gap-1 disabled:opacity-50 cursor-pointer min-h-[44px]"
               >
                 Draft Bill & Apply Discounts <ChevronRight className="h-4 w-4" />
               </button>
@@ -600,10 +617,10 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
         {/* STEP 3: DRAFT BILL & DISCOUNTS */}
         {activeStep === 3 && (
           <div className="p-6 sm:p-8 space-y-6">
-            <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <div className="border-b border-border pb-3 flex items-center justify-between">
               <div>
-                <h4 className="text-base font-bold text-slate-800">Step 4: Billing Computation & Exemption Math</h4>
-                <p className="text-xs text-slate-500">Edit prices, specify discount eligibility, and audit the live tax math.</p>
+                <h4 className="text-base font-bold text-text-primary">Step 4: Billing Computation & Exemption Math</h4>
+                <p className="text-xs text-text-secondary">Edit prices, specify discount eligibility, and audit the live tax math.</p>
               </div>
               <span className="text-xs font-mono tabular-nums font-bold bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-xl uppercase">
                 Draft Status
@@ -613,17 +630,17 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
             {/* Draft Lines Table */}
             <div className="space-y-3">
               <span className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Line Items (Editable prices):</span>
-              <table className="w-full text-left border-collapse border border-slate-200">
+              <table className="w-full text-left border-collapse border border-border">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase">
-                    <th className="p-2 border-r border-slate-200">Description</th>
+                  <tr className="bg-background border-b border-border text-xs font-bold text-text-secondary uppercase">
+                    <th className="p-2 border-r border-border">Description</th>
                     <th className="p-2 text-right">Unit Price (₱)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {draftLines.map((line, idx) => (
-                    <tr key={idx} className="border-b border-slate-200 hover:bg-slate-50">
-                      <td className="p-2 border-r border-slate-200 text-xs font-bold text-slate-700">
+                    <tr key={idx} className="border-b border-border hover:bg-background">
+                      <td className="p-2 border-r border-border text-xs font-bold text-text-primary">
                         {line.description}
                       </td>
                       <td className="p-2 w-32">
@@ -637,7 +654,7 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                             updated[idx].lineTotal = val;
                             setDraftLines(updated);
                           }}
-                          className="w-full bg-white border border-slate-300 rounded-2xl px-2 py-1 text-xs font-bold text-slate-800 font-mono tabular-nums text-right focus:ring-1 focus:ring-cyan-600"
+                          className="w-full bg-surface border border-border rounded-2xl px-2 py-1 text-xs font-bold text-text-primary font-mono tabular-nums text-right focus:ring-1 focus:ring-cyan-600"
                         />
                       </td>
                     </tr>
@@ -647,12 +664,14 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
             </div>
 
             {/* Discount Eligibility Rules Options */}
-            <div className="border-t border-slate-100 pt-5 space-y-3">
+            <div className="border-t border-border pt-5 space-y-3">
               <span className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Apply Philippine Mandated Exemption or Promotion</span>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              
+              {/* Premium Segmented Control Container */}
+              <div className="flex flex-wrap items-center gap-1.5 bg-[#F1F5F9] p-1 rounded-xl border border-border/50 self-start">
                 {([
                   { id: 'none', label: 'None (Standard)' },
-                  { id: 'senior', label: 'Senior citizen' },
+                  { id: 'senior', label: 'Senior Citizen' },
                   { id: 'pwd', label: 'PWD Exemption' },
                   { id: 'promotional', label: '10% Promo' },
                   { id: 'custom', label: 'Custom' }
@@ -664,12 +683,11 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                       type="button"
                       id={`discount-option-${item.id}`}
                       onClick={() => setDiscountType(item.id)}
-                      className={`py-2 px-3 border text-xs font-bold rounded-xl transition-all capitalize cursor-pointer
-                        ${isActive
-                          ? 'bg-cyan-50 border-cyan-600 ring-1 ring-cyan-500 text-cyan-950 font-bold'
-                          : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
-                        }
-                      `}
+                      className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all capitalize cursor-pointer select-none min-h-[44px] ${
+                        isActive
+                          ? 'bg-surface text-[#0E7490]  font-bold border border-border/50'
+                          : 'text-[#64748B] hover:text-[#1F2933]'
+                      }`}
                     >
                       {item.label}
                     </button>
@@ -682,18 +700,20 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="bg-slate-50 border border-slate-150 p-3 rounded-xl max-w-xs mt-2"
+                  className="bg-background border border-border p-3 rounded-xl max-w-xs mt-2"
                 >
-                  <label htmlFor="custom-pct" className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Custom Discount %</label>
+                  <label htmlFor="custom-pct" className="block text-[10px] font-bold text-text-secondary uppercase mb-1">Custom Discount %</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
                       id="custom-pct"
                       value={customDiscountPct}
-                      onChange={(e) => setCustomDiscountPct(Number(e.target.value))}
-                      className="w-20 bg-white border border-slate-300 rounded-2xl py-1 px-2 text-xs font-bold font-mono tabular-nums"
+                      min={0}
+                      max={100}
+                      onChange={(e) => setCustomDiscountPct(Math.max(0, Math.min(100, Number(e.target.value))))}
+                      className="w-20 bg-surface border border-border rounded-2xl py-1 px-2 text-xs font-bold font-mono tabular-nums"
                     />
-                    <span className="text-xs font-semibold text-slate-500">% reduction</span>
+                    <span className="text-xs font-semibold text-text-secondary">% reduction</span>
                   </div>
                 </motion.div>
               )}
@@ -703,42 +723,50 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="bg-slate-50 border border-slate-150 p-4 rounded-xl space-y-3 mt-2"
+                  className="bg-background border border-border p-4 rounded-xl space-y-3 mt-2"
                 >
-                  <span className="block text-xs font-bold text-cyan-800 flex items-center gap-1">
+                  <span className="block text-xs font-bold text-primary flex items-center gap-1.5">
                     <FileText className="h-4 w-4" /> Mandatory Government Exemption Document Capture
                   </span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label htmlFor="bill-sc-pwd" className="block text-[10px] font-bold text-slate-500 uppercase">OSCA / PWD ID Number</label>
+                      <label htmlFor="bill-sc-pwd" className="block text-[10px] font-bold text-text-secondary uppercase">OSCA / PWD ID Number</label>
                       <input
                         type="text"
                         id="bill-sc-pwd"
                         value={scPwdIdSnapshot}
                         onChange={(e) => setScPwdIdSnapshot(e.target.value)}
                         placeholder="Required ID printed on OSCA card"
-                        className="w-full bg-white border border-slate-300 rounded-2xl px-2.5 py-1.5 text-xs font-medium"
+                        className={`w-full bg-surface border rounded-2xl px-2.5 py-1.5 text-xs font-medium ${
+                          !scPwdIdSnapshot.trim() ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-border'
+                        }`}
                       />
+                      {!scPwdIdSnapshot.trim() && (
+                        <div className="text-[10px] text-red-700 font-bold mt-1 flex items-center gap-1">
+                          <AlertTriangle className="h-3.5 w-3.5 text-red-600 shrink-0" />
+                          <span>Required to unlock bill finalization.</span>
+                        </div>
+                      )}
                     </div>
                     <div className="space-y-1">
-                      <label htmlFor="bill-tin" className="block text-[10px] font-bold text-slate-500 uppercase">TIN (Optional)</label>
+                      <label htmlFor="bill-tin" className="block text-[10px] font-bold text-text-secondary uppercase">TIN (Optional)</label>
                       <input
                         type="text"
                         id="bill-tin"
                         value={tinSnapshot}
                         onChange={(e) => setTinSnapshot(e.target.value)}
                         placeholder="Tax Identification Number"
-                        className="w-full bg-white border border-slate-300 rounded-2xl px-2.5 py-1.5 text-xs font-medium"
+                        className="w-full bg-surface border border-border rounded-2xl px-2.5 py-1.5 text-xs font-medium"
                       />
                     </div>
                   </div>
-                  <span className="block text-[10.5px] text-slate-400 italic">ⓘ Exemption math will apply once both documents are snapshotted in the database.</span>
+                  <span className="block text-[10.5px] text-text-muted italic font-medium">Compliance Check: Exemption math will apply once both documents are snapshotted in the database.</span>
                 </motion.div>
               )}
             </div>
 
             {/* AUDIT THE MATH DOCK VISIBLY */}
-            <div className="bg-[#1F2933] text-white p-5 rounded-xl space-y-3 font-mono tabular-nums text-xs shadow-sm">
+            <div className="bg-[#1F2933] text-white p-5 rounded-xl space-y-3 font-mono tabular-nums text-xs ">
               <span className="block text-[10px] text-cyan-400 font-bold uppercase tracking-widest border-b border-white/10 pb-2">
                 Official BIR Audit Computation Dock
               </span>
@@ -781,10 +809,10 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
             </div>
 
             {/* Navigation Actions */}
-            <div className="flex gap-3 justify-end pt-4 border-t border-slate-100">
+            <div className="flex gap-3 justify-end pt-4 border-t border-border">
               <button
                 onClick={() => setActiveStep(2)}
-                className="py-2.5 px-5 border border-slate-300 bg-white hover:bg-slate-50 rounded-xl font-bold text-sm text-slate-600 flex items-center gap-1 cursor-pointer"
+                className="py-2.5 px-5 border border-border bg-surface hover:bg-background rounded-xl font-bold text-sm text-slate-600 flex items-center gap-1 cursor-pointer"
               >
                 <ChevronLeft className="h-4 w-4" /> Procedures
               </button>
@@ -792,7 +820,7 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                 onClick={handleFinalizeBill}
                 id="finalize-bill"
                 disabled={(discountType === 'senior' || discountType === 'pwd') && !scPwdIdSnapshot.trim()}
-                className="py-2.5 px-6 bg-cyan-700 hover:bg-cyan-800 text-white rounded-xl font-bold text-sm shadow-sm flex items-center gap-1 disabled:opacity-50 cursor-pointer min-h-[44px]"
+                className="py-2.5 px-6 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold text-sm  flex items-center gap-1 disabled:opacity-50 cursor-pointer min-h-[44px]"
               >
                 <Save className="h-4 w-4" /> Finalize & Lock Bill <ChevronRight className="h-4 w-4" />
               </button>
@@ -803,10 +831,10 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
         {/* STEP 4: PAYMENT SETTLEMENT & CLOSE */}
         {activeStep === 4 && (
           <div className="p-6 sm:p-8 space-y-6">
-            <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <div className="border-b border-border pb-3 flex items-center justify-between">
               <div>
-                <h4 className="text-base font-bold text-slate-800">Step 5: Ledger Settlement & Settle Account</h4>
-                <p className="text-xs text-slate-500">Record payments under Cash/Card/GCash/Bank. Outstanding balances carry to the ledger.</p>
+                <h4 className="text-base font-bold text-text-primary">Step 5: Ledger Settlement & Settle Account</h4>
+                <p className="text-xs text-text-secondary">Record payments under Cash/Card/GCash/Bank. Outstanding balances carry to the ledger.</p>
               </div>
               <span className="text-xs font-mono tabular-nums font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-xl uppercase">
                 Finalized Locked
@@ -814,15 +842,15 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
             </div>
 
             {/* Bill Info Summary */}
-            <div className="bg-slate-50 border border-slate-150 p-5 rounded-xl flex items-center justify-between">
+            <div className="bg-background border border-border p-5 rounded-xl flex items-center justify-between">
               <div>
-                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Finalized Bill Total</span>
-                <span className="text-2xl font-mono tabular-nums font-bold text-slate-800">₱{totals.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                <span className="block text-[10px] text-slate-500 mt-0.5">VAT-Exempt Concession Applied</span>
+                <span className="block text-[10px] font-bold text-text-muted uppercase tracking-wider">Finalized Bill Total</span>
+                <span className="text-2xl font-mono tabular-nums font-bold text-text-primary">₱{totals.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span className="block text-[10px] text-text-secondary mt-0.5">VAT-Exempt Concession Applied</span>
               </div>
 
               <div className="text-right">
-                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tax Snapshot captured</span>
+                <span className="block text-[10px] font-bold text-text-muted uppercase tracking-wider">Tax Snapshot captured</span>
                 <span className="text-xs font-mono tabular-nums font-semibold text-slate-600">ID: {scPwdIdSnapshot || 'None needed'}</span>
               </div>
             </div>
@@ -833,13 +861,13 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                 <div className="space-y-1.5">
                   <label htmlFor="payment-input" className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Amount Received (₱)</label>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">₱</span>
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-text-muted">₱</span>
                     <input
                       type="number"
                       id="payment-input"
                       value={paymentAmount}
                       onChange={(e) => setPaymentAmount(Number(e.target.value))}
-                      className="w-full bg-white border border-slate-300 rounded-2xl pl-8 pr-4 py-2.5 text-sm font-mono tabular-nums font-bold text-slate-800 focus:ring-1 focus:ring-cyan-600"
+                      className="w-full bg-surface border border-border rounded-2xl pl-8 pr-4 py-2.5 text-sm font-mono tabular-nums font-bold text-text-primary focus:ring-1 focus:ring-cyan-600"
                     />
                   </div>
 
@@ -849,7 +877,7 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                       type="button"
                       onClick={() => setPaymentAmount(totals.grandTotal)}
                       id="settle-full-payment"
-                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                      className="px-3 py-1.5 bg-background hover:bg-slate-200 text-text-primary text-xs font-bold rounded-xl transition-all cursor-pointer"
                     >
                       Settle Full Amount (₱{totals.grandTotal.toLocaleString()})
                     </button>
@@ -857,31 +885,46 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                       type="button"
                       onClick={() => setPaymentAmount(Math.round(totals.grandTotal / 2))}
                       id="settle-half-payment"
-                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                      className="px-3 py-1.5 bg-background hover:bg-slate-200 text-text-primary text-xs font-bold rounded-xl transition-all cursor-pointer"
                     >
                       Split Installment (50%)
                     </button>
                   </div>
                 </div>
 
-                {/* Payment Method dropdown */}
-                <div className="space-y-1.5">
-                  <label htmlFor="payment-method" className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Payment Channel</label>
-                  <select
-                    id="payment-method"
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value as any)}
-                    className="w-full bg-white border border-slate-300 rounded-2xl px-4 py-2.5 text-sm font-semibold text-slate-800 focus:ring-1 focus:ring-cyan-600"
-                  >
-                    <option value="cash">💵 Cash Payment</option>
-                    <option value="card">💳 Visa / Mastercard Credit Card</option>
-                    <option value="gcash">📱 GCash E-Wallet Mobile</option>
-                    <option value="bank">🏦 Direct Bank Wire Transfer</option>
-                  </select>
+                {/* Payment Method Segmented Control */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Payment Channel</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {([
+                      { id: 'cash', label: 'Cash Payment', Icon: DollarSign },
+                      { id: 'card', label: 'Credit Card', Icon: CreditCard },
+                      { id: 'gcash', label: 'GCash Wallet', Icon: Wallet },
+                      { id: 'bank', label: 'Bank Wire', Icon: Landmark }
+                    ] as const).map(opt => {
+                      const isActive = paymentMethod === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          id={`pay-channel-${opt.id}`}
+                          onClick={() => setPaymentMethod(opt.id)}
+                          className={`flex items-center justify-center gap-2 py-2.5 px-3 border rounded-xl text-xs font-bold transition-all select-none min-h-[44px] cursor-pointer ${
+                            isActive
+                              ? 'bg-primary border-cyan-700 text-white  ring-1 ring-cyan-500'
+                              : 'bg-surface border-border text-text-primary hover:border-border'
+                          }`}
+                        >
+                          <opt.Icon className="h-4 w-4 shrink-0" />
+                          <span>{opt.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Remaining Balance Calculator preview */}
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-150 flex items-center justify-between text-xs leading-none">
+                <div className="p-4 bg-background rounded-xl border border-border flex items-center justify-between text-xs leading-none">
                   <span className="font-bold text-slate-600 uppercase">Ledger outstanding balance to carry:</span>
                   <span className={`font-mono tabular-nums font-bold text-sm
                     ${(totals.grandTotal - paymentAmount) > 0 ? 'text-red-700' : 'text-green-700'}
@@ -895,7 +938,7 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                   type="button"
                   onClick={handleRecordPayment}
                   id="record-payment"
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-sm flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
+                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl  flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
                 >
                   <DollarSign className="h-4.5 w-4.5" />
                   Record Payment & Synchronize Ledger
@@ -915,8 +958,8 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                   <p className="text-xs text-emerald-700 mt-1">Payment transactions recorded. Patient running balances updated in the ledger.</p>
                 </div>
 
-                <div className="bg-white p-4 max-w-sm mx-auto rounded-xl border border-slate-200 text-left text-xs space-y-2 leading-relaxed">
-                  <div className="flex justify-between font-bold text-slate-700 pb-1.5 border-b border-slate-100">
+                <div className="bg-surface p-4 max-w-sm mx-auto rounded-xl border border-border text-left text-xs space-y-2 leading-relaxed">
+                  <div className="flex justify-between font-bold text-text-primary pb-1.5 border-b border-border">
                     <span>Ledger Summary:</span>
                     <span>Ref: {draftBill?.id}</span>
                   </div>
@@ -928,7 +971,7 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                     <span>Payment Received ({paymentMethod.toUpperCase()}):</span>
                     <span className="font-bold">-₱{paymentAmount.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-red-700 border-t border-dashed border-slate-200 pt-1.5 mt-1 font-bold">
+                  <div className="flex justify-between text-red-700 border-t border-dashed border-border pt-1.5 mt-1 font-bold">
                     <span>Balance carried forward:</span>
                     <span>₱{Math.max(0, totals.grandTotal - paymentAmount).toLocaleString()}</span>
                   </div>
@@ -938,7 +981,7 @@ export const ActiveVisitFlow: React.FC<ActiveVisitFlowProps> = ({
                   type="button"
                   onClick={onCloseVisit}
                   id="close-visit-flow"
-                  className="py-3 px-8 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-sm font-bold shadow-sm cursor-pointer min-h-[44px]"
+                  className="py-3 px-8 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-sm font-bold  cursor-pointer min-h-[44px]"
                 >
                   Close Encounter & Return Home
                 </button>

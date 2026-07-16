@@ -1,7 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { DensityMode, densitySpacing, SpacingTokens } from './spacing';
+import React, { createContext, useContext } from 'react';
+import { densitySpacing, SpacingTokens } from './spacing';
 import { colors } from './colors';
 import { radius } from './radius';
 import { typography } from './typography';
@@ -10,8 +10,6 @@ import { zIndex } from './zIndex';
 import { motionConfig } from './motion';
 
 interface DesignSystemContextType {
-  density: DensityMode;
-  setDensity: (mode: DensityMode) => void;
   spacing: SpacingTokens;
   colors: typeof colors;
   radius: typeof radius;
@@ -24,33 +22,12 @@ interface DesignSystemContextType {
 const DesignSystemContext = createContext<DesignSystemContextType | undefined>(undefined);
 
 export function DesignSystemProvider({
-  children,
-  defaultDensity = 'comfortable'
+  children
 }: {
   children: React.ReactNode;
-  defaultDensity?: DensityMode;
 }) {
-  const [density, setDensityState] = useState<DensityMode>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('clinic-density') as DensityMode;
-      if (stored && (stored === 'compact' || stored === 'comfortable' || stored === 'touch')) {
-        return stored;
-      }
-    }
-    return defaultDensity;
-  });
-
-  const setDensity = (mode: DensityMode) => {
-    setDensityState(mode);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('clinic-density', mode);
-    }
-  };
-
   const value: DesignSystemContextType = {
-    density,
-    setDensity,
-    spacing: densitySpacing[density],
+    spacing: densitySpacing,
     colors,
     radius,
     typography,

@@ -1,6 +1,1 @@
-{
-  "name": "Echevaria Dental Clinic Management System",
-  "description": "A responsive web app for dentist patient lookup, clinical charting, planned procedures, billing computation with senior/PWD discounts, and patient ledger.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
+{"name":"Echevaria Dental Clinic Management System","description":"A responsive web app for dentist patient lookup, clinical charting, planned procedures, billing computation with senior/PWD discounts, and patient ledger.","requestFramePermissions":[],"majorCapabilities":["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]}
