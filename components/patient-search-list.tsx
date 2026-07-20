@@ -99,11 +99,10 @@ export const PatientSearchList: React.FC<PatientSearchListProps> = ({
           <button
             onClick={onOpenIntake}
             id="launcher-intake-btn"
-            className="flex items-center justify-center gap-2 py-2.5 px-5 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold text-sm  hover: transition-all min-h-[44px]"
+            className="flex items-center justify-center gap-2 py-2.5 px-5 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold text-sm hover:opacity-95 transition-all min-h-[44px]"
           >
-            <Plus className="h-4 w-4" />
             <UserPlus className="h-4 w-4" />
-            New Patient Intake
+            New Patient
           </button>
         ) : (
           <div className="flex items-center gap-2 text-xs bg-background border border-border px-4 py-2 rounded-xl text-slate-600 font-semibold self-start">

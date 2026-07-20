@@ -39,11 +39,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
       {/* Centered Login Card */}
       <div 
         id="login-card-container" 
-        className="max-w-md w-full bg-white border border-border p-8 rounded flex flex-col"
+        className="max-w-md w-full bg-white border border-border p-8 rounded-2xl shadow-sm flex flex-col"
       >
         {/* Branding & Logo */}
         <div className="flex flex-col items-center mb-6">
-          <div className="h-11 w-11 bg-primary text-white flex items-center justify-center font-bold text-lg select-none rounded mb-3 leading-none">
+          <div className="h-11 w-11 bg-primary text-white flex items-center justify-center font-bold text-lg select-none rounded-xl mb-3 leading-none">
             E
           </div>
           <h1 className="text-lg font-bold text-text-primary leading-none">Login</h1>
@@ -58,11 +58,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
             <span className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider">
               Demo Authentication Domain
             </span>
-            <div className="flex rounded bg-[#F1F5F9] p-0.5 text-xs">
+            <div className="flex rounded-lg bg-[#F1F5F9] p-0.5 text-xs">
               <button
                 type="button"
                 onClick={() => handleRoleChange('dentist')}
-                className={`flex-1 py-1.5 rounded font-medium text-center transition-all cursor-pointer ${
+                className={`flex-1 py-1.5 rounded-md font-medium text-center transition-all cursor-pointer ${
                   selectedRole === 'dentist'
                     ? 'bg-white text-text-primary shadow-sm'
                     : 'text-text-muted hover:text-text-primary'
@@ -73,7 +73,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
               <button
                 type="button"
                 onClick={() => handleRoleChange('staff')}
-                className={`flex-1 py-1.5 rounded font-medium text-center transition-all cursor-pointer ${
+                className={`flex-1 py-1.5 rounded-md font-medium text-center transition-all cursor-pointer ${
                   selectedRole === 'staff'
                     ? 'bg-white text-text-primary shadow-sm'
                     : 'text-text-muted hover:text-text-primary'
@@ -94,7 +94,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
               id="login-email-input"
               readOnly
               value={selectedRole === 'dentist' ? 'elena.reyes@echevariadental.com' : 'marco.santos@echevariadental.com'}
-              className="w-full bg-[#F8F7F5] border border-border rounded px-3 py-2 text-sm text-text-primary font-mono focus:outline-none h-11"
+              className="w-full bg-[#F8F7F5] border border-border rounded-lg px-3 py-2 text-sm text-text-primary font-mono focus:outline-none h-11"
             />
           </div>
 
@@ -111,7 +111,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyUp={(e) => setCapsLockActive(e.getModifierState('CapsLock'))}
                 onKeyDown={(e) => setCapsLockActive(e.getModifierState('CapsLock'))}
-                className="w-full bg-white border border-border rounded pl-3 pr-10 py-2 text-sm text-text-primary font-mono tracking-wider focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all h-11"
+                className="w-full bg-white border border-border rounded-lg pl-3 pr-10 py-2 text-sm text-text-primary font-mono tracking-wider focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all h-11"
               />
               <button
                 type="button"
@@ -124,7 +124,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
 
             {/* Caps Lock Indicator */}
             {capsLockActive && (
-              <div className="flex items-center gap-1.5 text-amber-700 text-[11px] font-bold bg-amber-50 border border-amber-200 px-2.5 py-1 rounded mt-1.5">
+              <div className="flex items-center gap-1.5 text-amber-700 text-[11px] font-bold bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg mt-1.5">
                 <AlertCircle className="h-3.5 w-3.5 text-amber-700" />
                 Caps Lock is enabled
               </div>
@@ -137,7 +137,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
               type="submit"
               id="login-submit-btn"
               disabled={loading}
-              className="w-full py-2.5 px-4 bg-primary hover:bg-primary-hover text-white rounded font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 min-h-[44px] cursor-pointer"
+              className="w-full py-2.5 px-4 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 min-h-[44px] cursor-pointer"
             >
               {loading ? (
                 <span className="flex items-center gap-2">

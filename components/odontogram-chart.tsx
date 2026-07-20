@@ -210,9 +210,9 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
               key={option}
               id={`dentition-toggle-${option}`}
               onClick={() => setDentition(option)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition-all capitalize cursor-pointer ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all capitalize cursor-pointer focus:outline-none focus-visible:ring-0 ${
                 dentition === option
-                  ? 'bg-surface text-[#0E7490]  font-bold'
+                  ? 'bg-surface text-[#0E7490] font-bold shadow-xs border border-slate-200'
                   : 'text-[#64748B] hover:text-[#1F2933]'
               }`}
             >
@@ -393,7 +393,7 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
                           key={item.code}
                           id={`editor-condition-${item.code}`}
                           onClick={() => setEditorCondition(item.code)}
-                          className={`flex flex-col items-center justify-center py-2 border rounded-xl font-semibold transition-all cursor-pointer h-14
+                          className={`flex flex-col items-center justify-center py-2 border rounded-xl font-semibold transition-all cursor-pointer h-14 focus:outline-none focus-visible:ring-0
                             ${isChosen ? `${item.chosenStyles} ring-2 ring-[#0E7490] ring-offset-1 font-bold  scale-105` : `${item.styles} opacity-80`}
                           `}
                         >
@@ -471,14 +471,14 @@ export const OdontogramChart: React.FC<OdontogramChartProps> = ({
                   <button
                     id="cancel-save-tooth"
                     onClick={() => setSelectedTooth(null)}
-                    className="flex-1 py-3 border border-border hover:bg-background rounded-xl font-bold text-sm text-text-primary transition-colors cursor-pointer"
+                    className="flex-1 py-3 border border-border hover:bg-background rounded-xl font-bold text-sm text-text-primary transition-colors cursor-pointer focus:outline-none focus-visible:ring-0"
                   >
                     Cancel
                   </button>
                   <button
                     id="save-tooth-changes"
                     onClick={handleSaveTooth}
-                    className="flex-1 py-3 bg-[#0E7490] hover:bg-[#0E7490]/90 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2  hover: transition-all min-h-[44px] cursor-pointer"
+                    className="flex-1 py-3 bg-[#0E7490] hover:bg-[#0E7490]/90 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 hover:opacity-95 transition-all min-h-[44px] cursor-pointer focus:outline-none focus-visible:ring-0"
                   >
                     <Save className="h-4 w-4" />
                     Save Tooth State

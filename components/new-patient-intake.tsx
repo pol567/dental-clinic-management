@@ -204,7 +204,7 @@ export const NewPatientIntake: React.FC<NewPatientIntakeProps> = ({
           return (
             <div key={idx} className={`flex items-center gap-2 px-4 first:pl-0 ${isActive ? 'font-bold' : ''}`}>
               {isDone ? (
-                <span className="text-success flex items-center justify-center shrink-0">
+                <span className="text-emerald-600 flex items-center justify-center shrink-0">
                   <Check className="h-3.5 w-3.5" />
                 </span>
               ) : (
@@ -689,7 +689,7 @@ export const NewPatientIntake: React.FC<NewPatientIntakeProps> = ({
             type="button"
             id="intake-prev-btn"
             onClick={handlePrev}
-            className="py-2 px-5 border border-border bg-white hover:bg-background rounded font-bold text-sm text-text-primary transition-all flex items-center gap-1.5 cursor-pointer min-h-[44px]"
+            className="py-2 px-5 border border-border bg-white hover:bg-background rounded-xl font-bold text-sm text-text-primary transition-all flex items-center gap-1.5 cursor-pointer min-h-[44px]"
           >
             <ChevronLeft className="h-4 w-4" /> Back
           </button>
@@ -698,7 +698,7 @@ export const NewPatientIntake: React.FC<NewPatientIntakeProps> = ({
             type="button"
             id="intake-cancel-btn"
             onClick={onCancel}
-            className="py-2 px-5 border border-border bg-white hover:bg-background rounded font-bold text-sm text-text-secondary transition-all cursor-pointer min-h-[44px]"
+            className="py-2 px-5 border border-border bg-white hover:bg-background rounded-xl font-bold text-sm text-text-secondary transition-all cursor-pointer min-h-[44px]"
           >
             Cancel Onboarding
           </button>
@@ -709,7 +709,7 @@ export const NewPatientIntake: React.FC<NewPatientIntakeProps> = ({
             type="button"
             id="intake-next-btn"
             onClick={handleNext}
-            className="py-2 px-6 bg-primary hover:bg-primary-hover text-white rounded font-bold text-sm transition-all flex items-center gap-1.5 cursor-pointer min-h-[44px]"
+            className="py-2 px-6 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold text-sm transition-all flex items-center gap-1.5 cursor-pointer min-h-[44px]"
           >
             Continue <ChevronRight className="h-4 w-4" />
           </button>
@@ -718,7 +718,7 @@ export const NewPatientIntake: React.FC<NewPatientIntakeProps> = ({
             type="button"
             id="intake-submit-btn"
             onClick={handleSubmit}
-            className="py-2 px-6 bg-success hover:bg-green-700 text-white rounded font-bold text-sm transition-all flex items-center gap-2 cursor-pointer min-h-[44px]"
+            className="py-2 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2 cursor-pointer min-h-[44px]"
           >
             <Shield className="h-4 w-4" />
             Complete & Save Intake

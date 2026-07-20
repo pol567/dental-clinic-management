@@ -321,7 +321,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(({
           id={id}
           type="checkbox"
           className={`
-            h-4 w-4 text-cyan-700 bg-white border-slate-300 rounded-none focus:ring-cyan-600/30 cursor-pointer
+            h-4 w-4 text-cyan-700 bg-white border-slate-300 rounded focus:ring-cyan-600/30 cursor-pointer
             ${className}
           `}
           {...props}
@@ -516,11 +516,12 @@ export const Toolbar: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   children,
   ...props
 }) => {
-  const { spacing: s } = useDesignSystem();
+  const { spacing: s, radius: r } = useDesignSystem();
   return (
     <div
       className={`
-        flex flex-wrap items-center justify-between gap-3 bg-slate-50/80 border border-slate-200/50 p-2.5 rounded-none
+        flex flex-wrap items-center justify-between gap-3 bg-slate-50/80 border border-slate-200/50 p-2.5
+        ${r.lg}
         ${className}
       `}
       {...props}
@@ -592,7 +593,7 @@ export const Skeleton: React.FC<React.HTMLAttributes<HTMLDivElement> & { variant
   const { radius: r } = useDesignSystem();
 
   const variantClasses = {
-    text: 'h-3.5 w-full rounded-none',
+    text: `h-3.5 w-full ${r.xs}`,
     rect: 'h-10 w-full',
     circle: 'h-10 w-10 rounded-full',
   };

@@ -8,12 +8,12 @@
  */
 export const radius = {
   none: 'rounded-none',
-  xs: 'rounded-none',
-  sm: 'rounded-none',
-  md: 'rounded-none', // Minimal radius for inputs
-  lg: 'rounded-none', 
-  xl: 'rounded-none', 
-  xxl: 'rounded-none', // Master layout panes should be flat
-  xxxl: 'rounded-none', // Master layout panes should be flat
+  xs: 'rounded-sm',
+  sm: 'rounded-sm',
+  md: 'rounded-md', // Minimal radius for inputs
+  lg: 'rounded-lg', 
+  xl: 'rounded-xl', 
+  xxl: 'rounded-2xl', // Master layout panes and cards
+  xxxl: 'rounded-3xl', // Extra large cards/layout panels
   full: 'rounded-full', // Circular icons, status chips
 };

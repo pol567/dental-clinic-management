@@ -125,7 +125,7 @@ export default function Page() {
     <AppShell
       headerBrand={
         <div id="clinic-header-brand" className="flex items-center gap-2.5">
-          <span className="h-9 w-9 bg-primary text-white flex items-center justify-center font-bold text-base select-none">
+          <span className="h-9 w-9 bg-primary text-white flex items-center justify-center font-bold text-base select-none rounded-xl">
             E
           </span>
           <div>

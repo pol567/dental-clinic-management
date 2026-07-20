@@ -156,7 +156,7 @@ export const AppShell: React.FC<AppShellProps> = ({
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           {headerBrand || (
             <div className="flex items-center gap-2.5">
-              <span className="h-9 w-9 bg-cyan-700 text-white rounded-none flex items-center justify-center font-bold text-base shadow-none">
+              <span className="h-9 w-9 bg-cyan-700 text-white rounded-xl flex items-center justify-center font-bold text-base shadow-none">
                 E
               </span>
               <div>
@@ -243,11 +243,11 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({
   const hasInfo = outstandingBalance > 0;
 
   const modeButtons: { key: WorkspaceMode; label: string }[] = [
-    { key: 'INTAKE', label: '1. Overview' },
-    { key: 'CHARTING', label: '2. Clinical Charting' },
-    { key: 'BILLING', label: '3. Invoicing & Billing' },
-    { key: 'LEDGER', label: '4. Financial Ledger' },
-    { key: 'HISTORY', label: '5. Visits' },
+    { key: 'INTAKE', label: 'Overview' },
+    { key: 'CHARTING', label: 'Clinical Charting' },
+    { key: 'BILLING', label: 'Invoicing & Billing' },
+    { key: 'LEDGER', label: 'Financial Ledger' },
+    { key: 'HISTORY', label: 'Visits' },
   ];
 
   return (
@@ -260,7 +260,7 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({
             {onBack && (
               <button
                 onClick={onBack}
-                className="p-1.5 hover:bg-slate-100 rounded-none text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+                className={`p-1.5 hover:bg-slate-100 ${r.lg} text-slate-500 hover:text-slate-900 transition-colors cursor-pointer`}
                 title="Return to Patient Search"
               >
                 <ChevronLeft className="h-5 w-5" />
@@ -283,7 +283,7 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({
           {(hasCritical || hasWarning) && (
             <div className="flex flex-wrap items-center gap-2 flex-1">
               {hasCritical && (
-                <div className={`py-1.5 px-3 ${c.criticalBg} border ${c.criticalBorder} border-l-4 border-l-rose-600 text-rose-900 rounded-none flex items-center gap-2.5 shadow-none shrink-0`}>
+                <div className={`py-1.5 px-3 ${c.criticalBg} border ${c.criticalBorder} border-l-4 border-l-rose-600 text-rose-900 ${r.lg} flex items-center gap-2.5 shadow-sm shrink-0`}>
                   <AlertOctagon className="h-4 w-4 text-rose-600 shrink-0" />
                   <span className="text-[10px] font-bold tracking-wider uppercase text-rose-700 shrink-0">CRITICAL ALERT</span>
                   <div className="text-[10px] font-bold text-rose-900">
@@ -293,7 +293,7 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({
                 </div>
               )}
               {hasWarning && (
-                <div className={`py-1.5 px-3 ${c.warningBg} border ${c.warningBorder} border-l-4 border-l-amber-500 text-amber-900 rounded-none flex items-center gap-2.5 shadow-none shrink-0`}>
+                <div className={`py-1.5 px-3 ${c.warningBg} border ${c.warningBorder} border-l-4 border-l-amber-500 text-amber-900 ${r.lg} flex items-center gap-2.5 shadow-sm shrink-0`}>
                   <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
                   <span className="text-[10px] font-bold tracking-wider uppercase text-amber-700 shrink-0">WARNING</span>
                   <div className="text-[10px] font-semibold text-amber-900">
@@ -308,7 +308,7 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({
 
         {/* Outstanding Balance Info Badge */}
         {outstandingBalance > 0 && (
-          <div className="bg-rose-50 border border-rose-100 py-1.5 px-3.5 rounded-none shrink-0 self-start lg:self-center">
+          <div className={`bg-rose-50 border border-rose-100 py-1.5 px-3.5 ${r.lg} shrink-0 self-start lg:self-center`}>
             <span className="block text-[9px] text-rose-500 font-bold uppercase tracking-wider">Outstanding Balance</span>
             <span className="font-mono text-xs font-bold text-rose-700">₱{outstandingBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
           </div>
@@ -316,15 +316,15 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({
       </div>
 
       {/* Unified Mode Selector Row */}
-      <div className="flex items-center gap-1 bg-slate-100/90 border border-slate-200/50 p-1 rounded-none overflow-x-auto whitespace-nowrap scrollbar-none">
+      <div className="flex items-center gap-1 bg-slate-100/90 border border-slate-200/50 p-1 rounded-lg overflow-x-auto whitespace-nowrap scrollbar-none">
         {modeButtons.map(btn => (
           <button
             key={btn.key}
             onClick={() => setMode(btn.key)}
             className={`
-              flex-1 py-2 px-4 rounded-none font-bold text-xs tracking-tight transition-all cursor-pointer
+              flex-1 py-2 px-4 rounded-md font-bold text-xs tracking-tight transition-all cursor-pointer focus:outline-none focus-visible:ring-0
               ${mode === btn.key
-                ? 'bg-white text-slate-900 shadow-xs border-slate-200 border-b'
+                ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
                 : 'text-slate-500 hover:text-slate-800 hover:bg-white/40'
               }
             `}
@@ -382,7 +382,7 @@ export const Workspace: React.FC<WorkspaceProps> = ({ children }) => {
           {React.createElement(centerPanel, { patientId: activePatientId, encounterId: activeEncounterId })}
         </WorkspaceRegion>
       ) : (
-        <div className="flex-1 bg-white border border-solid border-slate-200 rounded-none flex flex-col items-center justify-center p-12 text-center">
+        <div className="flex-1 bg-white border border-solid border-slate-200 rounded-xl flex flex-col items-center justify-center p-12 text-center">
           <Sliders className="h-8 w-8 text-slate-300 animate-pulse mb-3" />
           <h4 className="text-xs font-bold text-slate-700">Workspace Region Pending</h4>
           <p className="text-[11px] text-slate-400 mt-1 max-w-xs font-semibold">
